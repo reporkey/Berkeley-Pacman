@@ -53,41 +53,82 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-class ReflexCaptureAgent(CaptureAgent):
+class MonteCarloAgent(CaptureAgent):
   """
   A base class for reflex agents that chooses score-maximizing actions
   """
- 
+  root = None
+  toExpand = []
+
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
     CaptureAgent.registerInitialState(self, gameState)
+    
+    root = Tree(red=super.red, i=super.index, s=gameState, a=None)
+    if gameState.getLegalActions(self.index) != 0:          # for case if born in an island
+      toExpand.append(root)
+    
+  def MonteCarloSearch():
+    select = selectNode()
+    node = expandNode(select)
+    reward = simulate(node)
+
+  def selectNode():
+
+    while len(toExpand) > 0:                               # for case if have developed all of states
+      node = random.choice(toExpand)
+      actions = node.gameState.getLegalActions(node.i)
+      if len(actions) == 0:                                 # jump to begin if this node is dead end
+        toExpand.remove(node)
+        continue
+
+      # remove actions if that leads to an existed child
+      toRemove = []
+      for a in actions:
+        for child in node:
+          if child.a == a:
+            toRemove.append(a)
+      for each in toRemove:
+        actions.remove(each)
+
+      if actions <= 1:
+        toExpand.remove(node)
+      action = random.choice(actions)
+      return (node, action)
+
+  def expandNode(parent, action):
+    successorS = parent.s.generateSuccessor(parent.i, action)
+    red = not parent.red
+    i = parent.i+1 if parent.i<3 else 0
+    successor = Tree(red=red, i=i, s=successorS, a=action, parent=parent)
+    parent.children.append(successor)
+
+  def simulate(node):
+    index = node.i
+    red = node.red
+
+    actions = node.gameState.getLegalActions(index)
+    while len(actions) > 0 :      # and game not terminate yet
+      action = ranodm.choice(actions)
+      successor = node.s.generateSuccessor(index, action)
+      index = index + 1
+      red = not red
+      actions = successor.getLegalActions(index)
+    evaluate(successor)
+
+  #TODO: modifying features, weights that take only one gameState
+
+
+
+
+
+
+  def backprop():
+    #TODO
+
 
   def chooseAction(self, gameState):
-    """
-    Picks among the actions with the highest Q(s,a).
-    """
-    actions = gameState.getLegalActions(self.index)
-
-    # You can profile your evaluation time by uncommenting these lines
-    # start = time.time()
-    values = [self.evaluate(gameState, a) for a in actions]
-    # print 'eval time for agent %d: %.4f' % (self.index, time.time() - start)
-
-    maxValue = max(values)
-    bestActions = [a for a, v in zip(actions, values) if v == maxValue]
-
-    foodLeft = len(self.getFood(gameState).asList())
-
-    if foodLeft <= 2:
-      bestDist = 9999
-      for action in actions:
-        successor = self.getSuccessor(gameState, action)
-        pos2 = successor.getAgentPosition(self.index)
-        dist = self.getMazeDistance(self.start,pos2)
-        if dist < bestDist:
-          bestAction = action
-          bestDist = dist
-      return bestAction
+    
 
     return random.choice(bestActions)
 
@@ -158,9 +199,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
   such an agent.
   """
 
-  def getFeatures(self, gameState, action):
+  def getFeatures(self, gameState):
     features = util.Counter()
-    successor = self.getSuccessor(gameState, action)
 
     myState = successor.getAgentState(self.index)
     myPos = myState.getPosition()
@@ -188,10 +228,14 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
 
 class Tree():
-  def __init__(self, player, parent=None):
-    self.player = player
+  def __init__(self, red, i, s, a, parent=None):
     self.parent = parent
     self.children = []
-    self.V = 0  # evaluation
-    self.N = 0  # #visted
-    self.r = 0  # reward
+    self.red = red
+    self.i = i                  # index
+    self.s = s                  # gameState
+    self.a = a                  # action from parent
+    self.V = 0                  # evaluation
+    self.N = 0                  # visted
+    self.r = 0                  # reward
+
