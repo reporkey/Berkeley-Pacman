@@ -121,7 +121,6 @@ class Env:
         return self.rewards
 
 class ValueiterationAgent(CaptureAgent):
-    #def __init__(self, gameState,env,discount = 0.9):
     def registerInitialState(self, gameState,discount = 0.9):
         self.start = gameState.getAgentPosition(self.index)
         CaptureAgent.registerInitialState(self, gameState)
@@ -138,6 +137,9 @@ class ValueiterationAgent(CaptureAgent):
         for _ in range(iter):
             valueiterationAgent.update_values()
         #TODO: come up a policy map
+        policies = np.array(height, width) # n*m matrix
+        for i,j in self.env.poslist:
+            policies[i][j] = best_policy(i, j)
 
         return policies
 
@@ -156,72 +158,8 @@ class ValueiterationAgent(CaptureAgent):
         best_state_index = np.argmax(self.successors_value(i, j))
         best_state_pos = successors[best_state_index]
         
-        return self.best_policy(best_state[0], best_state[1])
+        #TODO: i, j - best_state_pos => Directions.action
 
-
-valueiterationAgent=ValueiterationAgent(gameState,env,discount = 0.9)
-for _ in range(10):
-    valueiterationAgent.update_values()
-"""
-class OffensiveReflexAgent(ValueiterationAgent):
-    """
-    A reflex agent that seeks food. This is an agent
-    we give you to get an idea of what an offensive agent might look like,
-    but it is by no means the best or only way to build an offensive agent.
-    """
-
-    def getFeatures(self, gameState, action):
-        features = util.Counter()
-        successor = self.getSuccessor(gameState, action)
-        foodList = self.getFood(successor).asList()
-        features['successorScore'] = -len(foodList)  # self.getScore(successor)
-
-        # Compute distance to the nearest food
-
-        if len(foodList) > 0:  # This should always be True,  but better safe than sorry
-            myPos = successor.getAgentState(self.index).getPosition()
-            minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
-            features['distanceToFood'] = minDistance
-        return features
-
-    def getWeights(self, gameState, action):
-        return {'successorScore': 100, 'distanceToFood': -1}
-
-
-class DefensiveReflexAgent(ValueiterationAgent):
-    """
-    A reflex agent that keeps its side Pacman-free. Again,
-    this is to give you an idea of what a defensive agent
-    could be like.  It is not the best or only way to make
-    such an agent.
-    """
-
-    def getFeatures(self, gameState, action):
-        features = util.Counter()
-        successor = self.getSuccessor(gameState, action)
-
-        myState = successor.getAgentState(self.index)
-        myPos = myState.getPosition()
-
-        # Computes whether we're on defense (1) or offense (0)
-        features['onDefense'] = 1
-        if myState.isPacman: features['onDefense'] = 0
-
-        # Computes distance to invaders we can see
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
-        features['numInvaders'] = len(invaders)
-        if len(invaders) > 0:
-            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
-            features['invaderDistance'] = min(dists)
-
-        if action == Directions.STOP: features['stop'] = 1
-        rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
-        if action == rev: features['reverse'] = 1
-
-        return features
-
-    def getWeights(self, gameState, action):
-        return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+        return policy # Directions.EAST
 
 
