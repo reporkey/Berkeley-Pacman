@@ -26,6 +26,7 @@ import random, time, util, sys
 from game import Directions
 import game
 from util import nearestPoint
+import numpy as np
 
 
 #################
@@ -65,13 +66,56 @@ class MonteCarloAgent(CaptureAgent):
 
         CaptureAgent.registerInitialState(self, gameState)
         self.myTeamIndexies= self.getTeam(gameState)
+        self.rewards = None
         # print("register success: index ", self.index)
 
     def chooseAction(self, gameState):
+        self.buildMap(gameState)
+
         return self.monteCarloSearch(gameState)
 
+    def buildMap(self, gameState):
+        walls = gameState.getWalls().asList()  # walls是一个真值列表 wallsposition才是墙的坐标
+        foods = self.getFood(gameState).asList()  # food和walls的获取需要用不同的方法。可能跟他其他文件的相关定义有关
+        capsules = self.getCapsules(gameState)
+        width, height = gameState.getWalls().width, gameState.getWalls().height
+        self.rewards = np.zeros((width+1, height+1),dtype=None)
+        print(width, height)
+
+        # build reward map
+        for x in range(width+1):            # set out boundary cell to None
+            self.rewards[x][0] = None
+        for y in range(height+1):           # set out boundary cell to None
+            self.rewards[0][y] = None
+        for (x, y) in foods:                # set reward of each food as 10
+            self.rewards[x][y] = 10
+        for (x, y) in capsules:             # set reward of each capsule as 100
+            self.rewards[x][y] = 100
+        for (x, y) in walls:                # set reward of each WALL as None
+            self.rewards[x][y] = None
+        # print(self.rewards)
+
+        # list of position that required to be update during iterations
+        self.poslist = [pos for pos, x in np.ndenumerate(self.rewards) if x == 0]
+        # print(self.poslist)
+
+    """
+    Since the game is not in prefect knowledge, the positions of enemy agent are not given, Monte Carlo tree search do not 
+    able to expand or simulate enemies agent. Therefore, we apply "delete relaxing" from classical planning to this MDP, 
+    the idea is "not concerning enemies", neither expanding or simulating. It is reasonable in uninformed path searching, 
+    and should works pretty good in our situation. The game rules that when enemy agent is in 5 unit distance from my agent
+    position, then the position of that enemy agent will be given. Otherwise (manhattan distance > 5), rather than a 
+    coordination, a noised maze distance is given. From the view of offensive agent, when enemy is far away from my 
+    position (d > 5), its position may not as important as the position of foods. 
+    
+    Not sure about the performance on defensive agent, a reinforcement learning may outweigh.
+    
+    Then it rise up another issue, how to treat my other agents. The current solution is to keep expanding and simulating. 
+         
+    """
     def monteCarloSearch(self, gameState):
-        # print("\n=================================NEW TURN====================================")
+
+        print("\n=================================NEW TURN====================================")
         self.toExpand = []
         self.root = Tree(i=self.index, s=gameState, a=None)
         if gameState.getLegalActions(self.index) != 0:  # for case if born in an island
@@ -94,9 +138,11 @@ class MonteCarloAgent(CaptureAgent):
             self.backprop(V, node)
             # print("\n")
             end = time.time()
-            if end - start > 0.8:
+            if end - start > 10:
                 break
         decision = self.root.d
+        for child in self.root.children:
+            print(child.a, child.V)
         print("n: ", n, self.root.s.getAgentPosition(self.root.i), self.root.i, self.root.d)
         # print("==========crop leaf==========")
         # for child in self.root.children:
@@ -133,10 +179,14 @@ class MonteCarloAgent(CaptureAgent):
             return node, action
 
     def expandNode(self, parent, action):
-        reward = self.evaluate(parent.s, parent.i, action)
+        index = self.myTeamIndexies[0] if parent.i == self.myTeamIndexies[1] else self.myTeamIndexies[1]
+        # reward = self.evaluate(parent.s, parent.i, action)
         successorState = self.getSuccessor(parent.s, parent.i, action)
-        i = self.myTeamIndexies[0] if parent.i == self.myTeamIndexies[1] else self.myTeamIndexies[1]
-        successor = Tree(i=i, s=successorState, a=action, parent=parent, r=reward)
+        """ evaluate reward """
+        (x, y) = successorState.getAgentPosition(parent.i)
+        reward = self.rewards[x][y]
+        """ \evaluate reward """
+        successor = Tree(i=index, s=successorState, a=action, parent=parent, r=reward)
         parent.children.append(successor)
         self.toExpand.append(successor)
         # print("expand Node from", parent.s.getAgentPosition(self.index), action, "to ", successor.s.getAgentPosition(self.index), "index: ", self.index)
@@ -152,12 +202,12 @@ class MonteCarloAgent(CaptureAgent):
         while len(actions) > 1 and not successor.isOver() and reward == 0:  # any step except stop, & game not terminate yet
             action = random.choice(actions)  # randomly simulate
             n = n + 1
-            if index == node.i:     # evaluate if only this action is done by myself (the agent is asked to move)
-                reward = self.evaluate(successor, index, action)
             successor = self.getSuccessor(successor, index, action)
+            (x, y) = successor.getAgentPosition(index)
+            reward = self.rewards[x][y]
             index = self.myTeamIndexies[0] if index == self.myTeamIndexies[1] else self.myTeamIndexies[1]
             actions = successor.getLegalActions(index)
-        return node.r + self.gamma ** n * reward  # r(s) + gamma**n * r(s_n)
+        return node.r + (self.gamma ** n) * reward  # r(s) + gamma**n * r(s_n)
 
     def backprop(self, V, successor):
         successor.V = V  # reward + discounted future reward
