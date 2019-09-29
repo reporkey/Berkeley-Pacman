@@ -63,9 +63,9 @@ class ValueIteration:
         self.isRed = gameState.isOnRedTeam(index)
         self.discount = discount
         self.width, self.height = gameState.getWalls().width, gameState.getWalls().height
-        self.rewards = np.zeros((self.width + 1, self.height + 1), dtype=None)
-        self.Vs = np.zeros((self.width + 1, self.height + 1), dtype=None)
-        self.policies = np.full((self.width + 1, self.height + 1), None)
+        self.rewards = np.zeros((self.width, self.height), dtype=None)
+        self.Vs = np.zeros((self.width, self.height), dtype=None)
+        self.policies = np.full((self.width, self.height), None)
         self.toUpdate = []
 
         self.buildVMap(gameState)
@@ -79,10 +79,12 @@ class ValueIteration:
         width, height = gameState.getWalls().width, gameState.getWalls().height
 
         # build reward map
-        for x in range(width+1):            # set out boundary cell to None
+        for x in range(width):            # set out boundary cell to None
             self.rewards[x][0] = None
-        for y in range(height+1):           # set out boundary cell to None
+            self.rewards[x][-1] = None
+        for y in range(height):           # set out boundary cell to None
             self.rewards[0][y] = None
+            self.rewards[-1][y] = None
         for (x, y) in foods:                # set reward of each food as 10
             self.rewards[x][y] = 10
         for (x, y) in capsules:             # set reward of each capsule as 100
@@ -145,7 +147,7 @@ class MonteCarloAgent(CaptureAgent):
     """
 
     def registerInitialState(self, gameState):
-        self.gamma = 0.9
+        self.gamma = 0.8
 
         CaptureAgent.registerInitialState(self, gameState)
         self.myTeamIndexies= self.getTeam(gameState)
@@ -171,20 +173,10 @@ class MonteCarloAgent(CaptureAgent):
     def monteCarloSearch(self, gameState):
         print("\n=================================NEW TURN====================================")
 
-        # make up rewards and policies map
-        mapRewards = []
-        mapPolicies = []
-        for i in range(4):
-            if i in self.myTeamIndexies:
-                valueIter = ValueIteration(gameState, i, 100)
-                mapRewards.append(valueIter.rewards)
-                mapPolicies.append(valueIter.policies)
-            else:
-                mapRewards.append(None)
-                mapPolicies.append(None)
+        valueIter = ValueIteration(gameState, self.index, 100)
 
         self.toExpand = []
-        self.root = Tree(i=self.index, s=gameState, a=None, mapRewards=mapRewards, mapPolicies=mapPolicies)
+        self.root = Tree(i=self.index, s=gameState, a=None, mapRewards=valueIter.rewards, mapPolicies=valueIter.policies)
         if gameState.getLegalActions(self.index) != 0:  # for case if born in an island
             self.toExpand.append(self.root)
 
@@ -195,7 +187,7 @@ class MonteCarloAgent(CaptureAgent):
         while True:
             n = n+1
 
-            # print("==========select=============")
+            # print("\n==========select=============")
             selectNode, selectAction = self.selectNode()
             # print("==========expandNode=========")
             node = self.expandNode(selectNode, selectAction)
@@ -205,18 +197,35 @@ class MonteCarloAgent(CaptureAgent):
             self.backprop(V, node)
             # print("\n")
             end = time.time()
-            if end - start > 2:
+            if end - start > 0.9 :
                 break
-        decision = self.root.d
+        maxV = self.root.children[0].V
+        decision = self.root.children[0].a
         for child in self.root.children:
-            print(child.a, child.V)
-        print("n: ", n, self.root.s.getAgentPosition(self.root.i), self.root.i, self.root.d)
-        # print("==========crop leaf==========")
-        # for child in self.root.children:
-        #     if child.a is self.root.d:
-        #         self.root = child
-        # print("new location:", self.root.s.getAgentPosition(self.root.i))
+            if child.V > maxV:
+                maxV = child.V
+                decision = child.a
+        """=================debug=================="""
+        for child in self.root.children:
+            if child.a == Directions.NORTH:
+                print("NORTH:", self.childCount(child), child.V)
+            elif child.a == Directions.SOUTH:
+                print("SOUTH:", self.childCount(child), child.V)
+            elif child.a == Directions.WEST:
+                print("WEST:", self.childCount(child), child.V)
+            elif child.a == Directions.EAST:
+                print("EAST:", self.childCount(child), child.V)
+            elif child.a == Directions.STOP:
+                print("STOP:", self.childCount(child), child.V)
+
+        print("total: ", n, self.root.s.getAgentPosition(self.root.i), self.root.i, decision)
         return decision
+
+    def childCount(self, root):
+        count = len(root.children)
+        for each in root.children:
+            count += self.childCount(each)
+        return count
 
     def selectNode(self):
         while len(self.toExpand) > 0:  # for case if have developed all of states
@@ -246,30 +255,21 @@ class MonteCarloAgent(CaptureAgent):
             return node, action
 
     def expandNode(self, parent, action):
-        index = self.myTeamIndexies[0] if parent.i == self.myTeamIndexies[1] else self.myTeamIndexies[1]
+        # print(parent.s.getAgentPosition(parent.i), parent.i)
         successorState = self.getSuccessor(parent.s, parent.i, action)
         """ evaluate reward """
         (x, y) = successorState.getAgentPosition(parent.i)
-        reward = parent.mapRewards[parent.i][x, y]
-
+        reward = parent.mapRewards[x, y]
+        nextIndex = self.myTeamIndexies[0] if parent.i == self.myTeamIndexies[1] else self.myTeamIndexies[1]
         # if any reward on the map is changed, make up a new rewards and policies map
         if reward == 0:
-            successor = Tree(i=index, s=successorState, a=action, parent=parent, r=reward, mapRewards=parent.mapRewards, mapPolicies=parent.mapPolicies)
+            successor = Tree(i=nextIndex, s=successorState, a=action, parent=parent, r=reward, mapRewards=parent.mapRewards, mapPolicies=parent.mapPolicies)
         else:
-            mapRewards = []
-            mapPolicies = []
-            for i in range(4):
-                if i in self.myTeamIndexies:
-                    valueIter = ValueIteration(parent, i, 100)
-                    mapRewards.append(valueIter.rewards)
-                    mapPolicies.append(valueIter.policies)
-                else:
-                    mapRewards.append(None)
-                    mapPolicies.append(None)
-            successor = Tree(i=index, s=successorState, a=action, parent=parent, r=reward, mapRewards=mapRewards, mapPolicies=mapPolicies)
+            valueIter = ValueIteration(parent, self.index, 100)
+            successor = Tree(i=nextIndex, s=successorState, a=action, parent=parent, r=reward, mapRewards=valueIter.rewards, mapPolicies=valueIter.policies)
         parent.children.append(successor)
         self.toExpand.append(successor)
-        # print("expand Node from", parent.s.getAgentPosition(self.index), action, "to ", successor.s.getAgentPosition(self.index), "index: ", self.index)
+        # print("expand Node from", parent.s.getAgentPosition(parent.i), action, "to ", successor.s.getAgentPosition(parent.i), "index: ", parent.i)
         return successor
 
     def simulate(self, node):
@@ -279,16 +279,48 @@ class MonteCarloAgent(CaptureAgent):
         successor = node.s
         mapRewards = node.mapRewards
         mapPolicies = node.mapPolicies
+        # mapRewards, mapPolicies = [], []
+        # for i in range(4):
+        #     if i in self.myTeamIndexies:
+        #         valueIter = ValueIteration(successor, i, 100)
+        #         mapRewards.append(valueIter.rewards)
+        #         mapPolicies.append(valueIter.policies)
+        #     else:
+        #         mapRewards.append(None)
+        #         mapPolicies.append(None)
 
-        while not successor.isOver() and reward == 0:  # game not terminate yet
-            (x, y) = successor.getAgentPosition(index)
-            action = mapPolicies[index][x, y]
+        (x, y) = successor.getAgentPosition(index)
+
+        while not successor.isOver():  # game not terminate yet
+            # print(mapPolicies)
+            # print(mapRewards)
+            # print(successor.getAgentPosition(index), successor.getLegalActions(index))
+            action = mapPolicies[x, y]
             n = n + 1
             successor = self.getSuccessor(successor, index, action)
+            index = self.myTeamIndexies[0] if index == self.myTeamIndexies[1] else self.myTeamIndexies[1]  # next index
             (x, y) = successor.getAgentPosition(index)
-            reward = mapRewards[index][x, y]
-            while mapRewards[index] is None:
-                index = 0 if index == 3 else index+1
+            reward = mapRewards[x, y]
+            if reward > 0.01:
+                if index == self.index:
+                    break
+                # else:
+                #     mapRewards, mapPolicies = [], []
+                #     for i in range(4):
+                #         if i in self.myTeamIndexies:
+                #             valueIter = ValueIteration(successor, i, 50)
+                #             mapRewards.append(valueIter.rewards)
+                #             mapPolicies.append(valueIter.policies)
+                #         else:
+                #             mapRewards.append(None)
+                #             mapPolicies.append(None)
+
+
+        # print(node.s.getAgentPosition(index), index)
+        # print(node.r + (self.gamma ** n) * reward)
+        # print(n)
+        # print(self.gamma ** n)
+        # print(self.gamma ** n * reward)
         return node.r + (self.gamma ** n) * reward  # r(s) + gamma**n * r(s_n)
 
     def backprop(self, V, successor):
@@ -297,18 +329,12 @@ class MonteCarloAgent(CaptureAgent):
 
         node = successor.parent
         while node is not None:
-            maxV = node.children[0].V
-            decision = node.children[0].a  # best decision
-            reward = node.children[0].r
+            reward = None
+            maxV = max([child.V for child in node.children])
             for child in node.children:  # max(V(s'))
-                # if node is self.root:
-                #     print(child.V, child.a, child.r)
-                if child.V > maxV:
-                    maxV = child.V
-                    decision = child.a
+                if child.V == maxV:
                     reward = child.r
             node.V = reward + self.gamma * maxV
-            node.d = decision
             node.N += 1
             node = node.parent
 
@@ -378,15 +404,14 @@ class OffensiveReflexAgent(MonteCarloAgent):
 
 
 class Tree:
-    def __init__(self, i, s, a, mapRewards, mapPolicies, r=0, d=None, parent=None):
+    def __init__(self, i, s, a, mapRewards, mapPolicies, r=0, parent=None):
         self.parent = parent
         self.children = []
-        self.i = i  # index
+        self.i = i  # index that takes move in this node
         self.s = s  # gameState
         self.a = a  # action from parent
-        self.d = d  # decision action
         self.V = 0  # evaluation
         self.N = 0  # visted
         self.r = r  # reward
-        self.mapRewards = mapRewards    # k maps of all rewards for i, where k is the number of visible agents, i is index
+        self.mapRewards = mapRewards
         self.mapPolicies = mapPolicies
