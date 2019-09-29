@@ -56,30 +56,27 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-class MonteCarloAgent(CaptureAgent):
-    """
-    A base class for reflex agents that chooses score-maximizing actions
-    """
+class ValueIteration:
 
-    def registerInitialState(self, gameState):
-        self.gamma = 0.8
+    def __init__(self, gameState, index, discount=0.9):
+        self.index = index
+        self.isRed = gameState.isOnRedTeam(index)
+        self.discount = discount
+        self.width, self.height = gameState.getWalls().width, gameState.getWalls().height
+        self.rewards = np.zeros((self.width + 1, self.height + 1), dtype=None)
+        self.Vs = np.zeros((self.width + 1, self.height + 1), dtype=None)
+        self.policies = np.full((self.width + 1, self.height + 1), None)
+        self.toUpdate = []
 
-        CaptureAgent.registerInitialState(self, gameState)
-        self.myTeamIndexies= self.getTeam(gameState)
-        self.rewards = None
-        # print("register success: index ", self.index)
+        self.buildVMap(gameState)
+        self.iteration(100)
+        self.buildPoliciesMap()
 
-    def chooseAction(self, gameState):
-        self.buildMap(gameState)
-
-        return self.monteCarloSearch(gameState)
-
-    def buildMap(self, gameState):
-        walls = gameState.getWalls().asList()  # walls是一个真值列表 wallsposition才是墙的坐标
-        foods = self.getFood(gameState).asList()  # food和walls的获取需要用不同的方法。可能跟他其他文件的相关定义有关
-        capsules = self.getCapsules(gameState)
+    def buildVMap(self, gameState):
+        walls = gameState.getWalls().asList()
+        foods = gameState.getBlueFood().asList() if self.isRed else gameState.getRedFood().asList()
+        capsules = gameState.getBlueCapsules() if self.isRed else gameState.getRedCapsules().asList()
         width, height = gameState.getWalls().width, gameState.getWalls().height
-        self.rewards = np.zeros((width+1, height+1),dtype=None)
         print(width, height)
 
         # build reward map
@@ -96,8 +93,69 @@ class MonteCarloAgent(CaptureAgent):
         # print(self.rewards)
 
         # list of position that required to be update during iterations
-        self.poslist = [pos for pos, x in np.ndenumerate(self.rewards) if x == 0]
-        # print(self.poslist)
+        self.toUpdate = [pos for pos, x in np.ndenumerate(self.rewards) if x == 0]
+        # print(self.toUpdate)
+
+    def iteration(self, epoch=10):
+
+        self.Vs = self.rewards.copy()
+
+        # update all V values [epoch] times
+        for n in range(epoch):
+            oldVs = self.Vs.copy()
+            for i, j in self.toUpdate:
+                self.Vs[i, j] = self.discount * max(self.getSuccessors(oldVs, i, j).values())
+
+    def buildPoliciesMap(self):
+        # make up a policy map from V values
+        for (x, y), value in np.ndenumerate(self.Vs):
+            if not np.isnan(value):
+                successors = self.getSuccessors(self.Vs, x, y)
+                (i, j) = max(successors, key=successors.get)
+                if (i-x, j-y) == (0, 1):
+                    self.policies[x, y] = Directions.NORTH
+                elif (i-x, j-y) == (0, -1):
+                    self.policies[x, y] = Directions.SOUTH
+                elif (i-x, j-y) == (1, 0):
+                    self.policies[x, y] = Directions.EAST
+                elif (i-x, j-y) == (-1, 0):
+                    self.policies[x, y] = Directions.WEST
+                elif (i-x, j-y) == (0, 0):
+                    self.policies[x, y] = Directions.STOP
+                else:
+                    self.policies[x, y] = None
+            else:
+                self.policies[x, y] = None
+
+    def getSuccessors(self, grid, i, j):
+        successors = {}                 # successor = {(x, y) = V_value}
+        if i-1 >= 0 and not np.isnan(grid[i-1, j]):
+            successors[(i-1, j)] = grid[i-1, j]
+        if i+1 <= self.width and not np.isnan(grid[i+1, j]):
+            successors[(i+1, j)] = grid[i+1, j]
+        if j-1 >= 0 and not np.isnan(grid[i, j-1]):
+            successors[(i, j-1)] = grid[i, j-1]
+        if j+1 <= self.height and not np.isnan(grid[i, j + 1]):
+            successors[(i, j+1)] = grid[i, j+1]
+
+        return successors
+
+class MonteCarloAgent(CaptureAgent):
+    """
+    A base class for reflex agents that chooses score-maximizing actions
+    """
+
+    def registerInitialState(self, gameState):
+        self.gamma = 0.8
+
+        CaptureAgent.registerInitialState(self, gameState)
+        self.myTeamIndexies= self.getTeam(gameState)
+        # print("register success: index ", self.index)
+
+    def chooseAction(self, gameState):
+        valueIter = ValueIteration(gameState, self.index)
+        (x, y) = gameState.getAgentPosition(self.index)
+        return valueIter.policies[x, y]  #self.monteCarloSearch(gameState, valueIter)
 
     """
     Since the game is not in prefect knowledge, the positions of enemy agent are not given, Monte Carlo tree search do not 
