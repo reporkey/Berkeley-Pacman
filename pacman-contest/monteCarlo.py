@@ -90,7 +90,7 @@ class MonteCarloAgent(CaptureAgent):
             self.backprop(V, node)
             # print("\n")
             end = time.time()
-            if end - start > 0.05:
+            if end - start > 0.5:
                 break
         maxIndex = np.argmax([self.gamma * child.V for child in self.root.children])
         decision = self.root.children[int(maxIndex)].a
@@ -116,7 +116,7 @@ class MonteCarloAgent(CaptureAgent):
         action = None
         actions = node.s.getLegalActions(node.i)
 
-        while len(node.children) > 0 or len(actions) > 0:
+        while (len(node.children) > 0 or len(actions) > 0) and not node.s.isOver():
 
             # choose action
             existedActions = set([each.a for each in node.children])
@@ -187,7 +187,7 @@ class MonteCarloAgent(CaptureAgent):
         if node.parent.i == self.index:
             return self.evaluate(node.parent.s, node.a)
         else:
-            return 0
+            return -np.inf
 
     def backprop(self, V, successor):
         successor.V = V  # discounted future reward
@@ -195,7 +195,7 @@ class MonteCarloAgent(CaptureAgent):
 
         node = successor.parent
         while node is not None:
-            node.V = max([(self.gamma * child.V) for child in node.children])
+            node.V = np.max([node.V] + [(self.gamma * child.V) for child in node.children]) # max among (self v & childrens' V)
             node.N += 1
             node = node.parent
 
@@ -240,7 +240,7 @@ class OffensiveReflexAgent(MonteCarloAgent):
 
         # Compute distance to the nearest food
 
-        if len(foodList) > 0:  # This should always be True,  but better safe than sorry
+        if len(foodList) > 0:  # This should always be True, but better safe than sorry
             myPos = successor.getAgentState(self.index).getPosition()
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
             features['distanceToFood'] = minDistance
@@ -296,7 +296,7 @@ class Tree:
         self.i = i  # index that will make a move in this node
         self.s = s  # gameState
         self.a = a  # action from parent
-        self.V = 0  # evaluation
+        self.V = -np.inf  # evaluation
         self.N = 0  # visited times
         # self.r = r  # reward
 
