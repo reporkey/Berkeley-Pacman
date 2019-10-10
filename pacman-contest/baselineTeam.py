@@ -60,7 +60,7 @@ class ReflexCaptureAgent(CaptureAgent):
  
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
-    print(gameState)
+    # print(gameState)
     CaptureAgent.registerInitialState(self, gameState)
 
   def chooseAction(self, gameState):
