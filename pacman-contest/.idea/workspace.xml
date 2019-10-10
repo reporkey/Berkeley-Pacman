@@ -17,39 +17,25 @@
       <file leaf-file-name="baselineTeam.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/baselineTeam.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="138">
-              <caret line="161" column="0" lean-forward="false" selection-start-line="161" selection-start-column="0" selection-end-line="187" selection-end-column="104" />
+            <state relative-caret-position="1288">
+              <caret line="61" column="55" lean-forward="false" selection-start-line="61" selection-start-column="55" selection-end-line="61" selection-end-column="55" />
               <folding>
-                <element signature="e#3552#3932#0" expanded="false" />
-                <element signature="e#3979#4186#0" expanded="false" />
-                <element signature="e#4236#4456#0" expanded="false" />
-                <element signature="e#4505#4656#0" expanded="false" />
+                <element signature="e#3531#3911#0" expanded="false" />
+                <element signature="e#3958#4165#0" expanded="false" />
+                <element signature="e#4215#4435#0" expanded="false" />
+                <element signature="e#4484#4635#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="myTeam.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="myTeam.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/myTeam.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="276">
-              <caret line="55" column="0" lean-forward="false" selection-start-line="55" selection-start-column="0" selection-end-line="127" selection-end-column="34" />
-              <folding>
-                <element signature="e#4687#5589#0" expanded="false" />
-                <element signature="e#5641#6956#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="myTeam4.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/myTeam4.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-909">
-              <caret line="227" column="0" lean-forward="true" selection-start-line="227" selection-start-column="0" selection-end-line="227" selection-end-column="0" />
+            <state relative-caret-position="621">
+              <caret line="229" column="0" lean-forward="false" selection-start-line="229" selection-start-column="0" selection-end-line="229" selection-end-column="0" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
-                <element signature="e#1203#3795#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -58,18 +44,8 @@
       <file leaf-file-name="captureAgents.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/captureAgents.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="251">
+            <state relative-caret-position="4876">
               <caret line="215" column="32" lean-forward="false" selection-start-line="215" selection-start-column="23" selection-end-line="215" selection-end-column="32" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="a.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/a.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="69">
-              <caret line="3" column="12" lean-forward="false" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="12" />
               <folding />
             </state>
           </provider>
@@ -102,12 +78,12 @@
       <find>epoch</find>
       <find>getred</find>
       <find>getredtea</find>
+      <find>print</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/baselineTeam.py" />
         <option value="$PROJECT_DIR$/myTeam3.py" />
         <option value="$PROJECT_DIR$/czr111.py" />
         <option value="$PROJECT_DIR$/captureAgents.py" />
@@ -116,6 +92,8 @@
         <option value="$PROJECT_DIR$/myTeam2.py" />
         <option value="$PROJECT_DIR$/a.py" />
         <option value="$PROJECT_DIR$/myTeam4.py" />
+        <option value="$PROJECT_DIR$/baselineTeam.py" />
+        <option value="$PROJECT_DIR$/myTeam.py" />
       </list>
     </option>
   </component>
@@ -274,18 +252,17 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="83" y="30" width="1598" height="988" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17447917" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -324,27 +301,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/baselineTeam.py</url>
-          <line>130</line>
+          <line>129</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/myTeam2.py</url>
-          <line>165</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/myTeam3.py</url>
-          <line>136</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/myTeam3.py</url>
-          <line>156</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/baselineTeam.py</url>
-          <line>94</line>
+          <line>93</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>
@@ -360,61 +322,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1380">
-          <caret line="83" column="39" lean-forward="true" selection-start-line="83" selection-start-column="39" selection-end-line="83" selection-end-column="39" />
-          <folding>
-            <element signature="e#0#38#0" expanded="true" />
-            <element signature="e#1203#3795#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam4.py" />
     <entry file="file://$PROJECT_DIR$/baselineTeam.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#3552#3932#0" expanded="false" />
-            <element signature="e#3979#4186#0" expanded="false" />
-            <element signature="e#4236#4456#0" expanded="false" />
-            <element signature="e#4505#4656#0" expanded="false" />
+            <element signature="e#3531#3911#0" expanded="false" />
+            <element signature="e#3958#4165#0" expanded="false" />
+            <element signature="e#4215#4435#0" expanded="false" />
+            <element signature="e#4484#4635#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1863">
-          <caret line="87" column="53" lean-forward="false" selection-start-line="87" selection-start-column="53" selection-end-line="87" selection-end-column="53" />
-          <folding>
-            <element signature="e#5571#5993#0" expanded="false" />
-            <element signature="e#7266#7433#0" expanded="false" />
-            <element signature="e#7489#8454#0" expanded="false" />
-            <element signature="e#8510#9919#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/czr111.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="92">
-          <caret line="4" column="13" lean-forward="true" selection-start-line="4" selection-start-column="13" selection-end-line="4" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1702">
-          <caret line="151" column="42" lean-forward="true" selection-start-line="151" selection-start-column="42" selection-end-line="151" selection-end-column="42" />
-          <folding>
-            <element signature="e#1082#1120#0" expanded="false" />
-            <element signature="e#1475#2295#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam3.py" />
+    <entry file="file://$PROJECT_DIR$/czr111.py" />
+    <entry file="file://$PROJECT_DIR$/myTeam2.py" />
     <entry file="file://$PROJECT_DIR$/captureAgents.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="966">
@@ -427,7 +351,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="690">
           <caret line="33" column="28" lean-forward="false" selection-start-line="33" selection-start-column="27" selection-end-line="33" selection-end-column="28" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -450,43 +373,20 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#3552#3932#0" expanded="false" />
-            <element signature="e#3979#4186#0" expanded="false" />
-            <element signature="e#4236#4456#0" expanded="false" />
-            <element signature="e#4505#4656#0" expanded="false" />
+            <element signature="e#3531#3911#0" expanded="false" />
+            <element signature="e#3958#4165#0" expanded="false" />
+            <element signature="e#4215#4435#0" expanded="false" />
+            <element signature="e#4484#4635#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2162">
-          <caret line="94" column="72" lean-forward="true" selection-start-line="94" selection-start-column="72" selection-end-line="94" selection-end-column="72" />
-          <folding>
-            <element signature="e#5571#5993#0" expanded="false" />
-            <element signature="e#7266#7433#0" expanded="false" />
-            <element signature="e#7489#8454#0" expanded="false" />
-            <element signature="e#8510#9919#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2024">
-          <caret line="165" column="51" lean-forward="false" selection-start-line="155" selection-start-column="8" selection-end-line="165" selection-end-column="51" />
-          <folding>
-            <element signature="e#1082#1120#0" expanded="false" />
-            <element signature="e#1475#2295#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam3.py" />
+    <entry file="file://$PROJECT_DIR$/myTeam2.py" />
     <entry file="file://$PROJECT_DIR$/game.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="690">
           <caret line="33" column="28" lean-forward="false" selection-start-line="33" selection-start-column="27" selection-end-line="33" selection-end-column="28" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -509,10 +409,10 @@
         <state relative-caret-position="1771">
           <caret line="82" column="21" lean-forward="false" selection-start-line="82" selection-start-column="21" selection-end-line="82" selection-end-column="21" />
           <folding>
-            <element signature="e#3552#3932#0" expanded="false" />
-            <element signature="e#3979#4186#0" expanded="false" />
-            <element signature="e#4236#4456#0" expanded="false" />
-            <element signature="e#4505#4656#0" expanded="false" />
+            <element signature="e#3531#3911#0" expanded="false" />
+            <element signature="e#3958#4165#0" expanded="false" />
+            <element signature="e#4215#4435#0" expanded="false" />
+            <element signature="e#4484#4635#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -525,22 +425,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2024">
-          <caret line="165" column="51" lean-forward="true" selection-start-line="155" selection-start-column="8" selection-end-line="165" selection-end-column="51" />
-          <folding>
-            <element signature="e#1082#1120#0" expanded="false" />
-            <element signature="e#1475#2295#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam2.py" />
     <entry file="file://$PROJECT_DIR$/game.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="690">
           <caret line="33" column="28" lean-forward="false" selection-start-line="33" selection-start-column="27" selection-end-line="33" selection-end-column="28" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -558,45 +447,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2323">
-          <caret line="107" column="55" lean-forward="true" selection-start-line="107" selection-start-column="55" selection-end-line="107" selection-end-column="55" />
-          <folding>
-            <element signature="e#5571#5993#0" expanded="false" />
-            <element signature="e#7266#7433#0" expanded="false" />
-            <element signature="e#7489#8454#0" expanded="false" />
-            <element signature="e#8510#9919#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam3.py" />
     <entry file="file://$PROJECT_DIR$/baselineTeam.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1771">
           <caret line="82" column="21" lean-forward="false" selection-start-line="82" selection-start-column="21" selection-end-line="82" selection-end-column="21" />
           <folding>
-            <element signature="e#3552#3932#0" expanded="false" />
-            <element signature="e#3979#4186#0" expanded="false" />
-            <element signature="e#4236#4456#0" expanded="false" />
-            <element signature="e#4505#4656#0" expanded="false" />
+            <element signature="e#3531#3911#0" expanded="false" />
+            <element signature="e#3958#4165#0" expanded="false" />
+            <element signature="e#4215#4435#0" expanded="false" />
+            <element signature="e#4484#4635#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1518">
-          <caret line="72" column="0" lean-forward="true" selection-start-line="72" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
-          <folding>
-            <element signature="e#5571#5993#0" expanded="false" />
-            <element signature="e#7266#7433#0" expanded="false" />
-            <element signature="e#7489#8454#0" expanded="false" />
-            <element signature="e#8510#9919#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam3.py" />
     <entry file="file://$PROJECT_DIR$/captureAgents.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="966">
@@ -609,7 +474,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="690">
           <caret line="33" column="28" lean-forward="false" selection-start-line="33" selection-start-column="27" selection-end-line="33" selection-end-column="28" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -627,26 +491,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1679">
-          <caret line="150" column="7" lean-forward="false" selection-start-line="150" selection-start-column="7" selection-end-line="150" selection-end-column="7" />
-          <folding>
-            <element signature="e#1082#1120#0" expanded="false" />
-            <element signature="e#1475#2295#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam2.py" />
     <entry file="file://$PROJECT_DIR$/baselineTeam.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#3552#3932#0" expanded="false" />
-            <element signature="e#3979#4186#0" expanded="false" />
-            <element signature="e#4236#4456#0" expanded="false" />
-            <element signature="e#4505#4656#0" expanded="false" />
+            <element signature="e#3531#3911#0" expanded="false" />
+            <element signature="e#3958#4165#0" expanded="false" />
+            <element signature="e#4215#4435#0" expanded="false" />
+            <element signature="e#4484#4635#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -670,7 +524,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="690">
           <caret line="33" column="28" lean-forward="false" selection-start-line="33" selection-start-column="27" selection-end-line="33" selection-end-column="28" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -695,49 +548,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1357">
-          <caret line="65" column="28" lean-forward="true" selection-start-line="65" selection-start-column="28" selection-end-line="65" selection-end-column="28" />
-          <folding>
-            <element signature="e#5571#5993#0" expanded="false" />
-            <element signature="e#7266#7433#0" expanded="false" />
-            <element signature="e#7489#8454#0" expanded="false" />
-            <element signature="e#8510#9919#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/czr111.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="4" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/czr112.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="46">
-          <caret line="2" column="62" lean-forward="false" selection-start-line="2" selection-start-column="62" selection-end-line="2" selection-end-column="62" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2967">
-          <caret line="144" column="0" lean-forward="false" selection-start-line="144" selection-start-column="0" selection-end-line="144" selection-end-column="0" />
-          <folding>
-            <element signature="e#1082#1120#0" expanded="false" />
-            <element signature="e#1475#2295#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam3.py" />
+    <entry file="file://$PROJECT_DIR$/czr111.py" />
+    <entry file="file://$PROJECT_DIR$/czr112.py" />
+    <entry file="file://$PROJECT_DIR$/myTeam2.py" />
     <entry file="file://$PROJECT_DIR$/capture.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="747">
           <caret line="168" column="6" lean-forward="false" selection-start-line="168" selection-start-column="6" selection-end-line="168" selection-end-column="6" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -749,49 +567,17 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/myTeam4 - 副本.py" />
-    <entry file="file://$PROJECT_DIR$/a.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="69">
-          <caret line="3" column="12" lean-forward="false" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="12" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="55" column="0" lean-forward="false" selection-start-line="55" selection-start-column="0" selection-end-line="127" selection-end-column="34" />
-          <folding>
-            <element signature="e#4687#5589#0" expanded="false" />
-            <element signature="e#5641#6956#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/baselineTeam.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="138">
-          <caret line="161" column="0" lean-forward="false" selection-start-line="161" selection-start-column="0" selection-end-line="187" selection-end-column="104" />
-          <folding>
-            <element signature="e#3552#3932#0" expanded="false" />
-            <element signature="e#3979#4186#0" expanded="false" />
-            <element signature="e#4236#4456#0" expanded="false" />
-            <element signature="e#4505#4656#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/a.py" />
     <entry file="file://$PROJECT_DIR$/game.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="251">
           <caret line="179" column="11" lean-forward="false" selection-start-line="179" selection-start-column="10" selection-end-line="179" selection-end-column="11" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/captureAgents.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="251">
+        <state relative-caret-position="4876">
           <caret line="215" column="32" lean-forward="false" selection-start-line="215" selection-start-column="23" selection-end-line="215" selection-end-column="32" />
           <folding />
         </state>
@@ -801,19 +587,29 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-5106">
           <caret line="15" column="6" lean-forward="false" selection-start-line="15" selection-start-column="6" selection-end-line="15" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/myTeam4.py" />
+    <entry file="file://$PROJECT_DIR$/baselineTeam.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1288">
+          <caret line="61" column="55" lean-forward="false" selection-start-line="61" selection-start-column="55" selection-end-line="61" selection-end-column="55" />
           <folding>
-            <element signature="e#0#38#0" expanded="true" />
+            <element signature="e#3531#3911#0" expanded="false" />
+            <element signature="e#3958#4165#0" expanded="false" />
+            <element signature="e#4215#4435#0" expanded="false" />
+            <element signature="e#4484#4635#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myTeam4.py">
+    <entry file="file://$PROJECT_DIR$/myTeam.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-909">
-          <caret line="227" column="0" lean-forward="true" selection-start-line="227" selection-start-column="0" selection-end-line="227" selection-end-column="0" />
+        <state relative-caret-position="621">
+          <caret line="229" column="0" lean-forward="false" selection-start-line="229" selection-start-column="0" selection-end-line="229" selection-end-column="0" />
           <folding>
             <element signature="e#0#38#0" expanded="true" />
-            <element signature="e#1203#3795#0" expanded="false" />
           </folding>
         </state>
       </provider>

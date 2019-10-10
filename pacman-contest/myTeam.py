@@ -222,7 +222,7 @@ class ValueiterationAgent(CaptureAgent):
         CaptureAgent.registerInitialState(self, gameState)
 
     def chooseAction(self, gameState):
-        valueIteration=ValueIteration(gameState, self.index, 300, self.getHeuristic(),0.9)
+        valueIteration=ValueIteration(gameState, self.index, 100, self.getHeuristic(),0.9)
         (x,y)=gameState.getAgentPosition(self.index)
         return valueIteration.policies[x,y]
 
