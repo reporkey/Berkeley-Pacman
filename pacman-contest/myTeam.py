@@ -18,6 +18,7 @@ from game import Directions
 import game
 from util import nearestPoint
 import numpy as np
+import os, json
 
 
 # from layout import Layout
@@ -70,7 +71,7 @@ class ApproximateQAgent(CaptureAgent):
         CaptureAgent.registerInitialState(self, gameState)
         # self.epsilon = 0.0  # exploration prob
         # self.epsilon = 0.05
-        self.alpha = 0.1  # learning rate
+        self.alpha = 0.02  # learning rate
         self.gamma = 0.8
         self.totalNumOppositeFood = len(self.getFood(gameState).asList())
         self.totalNumOppositeCapsules = len(self.getCapsules(gameState))
@@ -79,9 +80,12 @@ class ApproximateQAgent(CaptureAgent):
         self.mapArea = (gameState.getWalls().width - 2) * (gameState.getWalls().height - 2)
         self.midLine = [(width // 2 - 1 if self.red else width // 2, y) for y in range(1, height)]
         self.midLine = [(x, y) for (x, y) in self.midLine if not gameState.hasWall(x, y)]
-        self.weights = self.getWeights()
+
         self.lastQ = 0
         self.lastAction = None
+
+        self.file = ""
+        self.weights = self.getWeights()
 
     """  
     def getQValue(self, gameState, move):
@@ -115,8 +119,11 @@ class ApproximateQAgent(CaptureAgent):
             self.lastQ = Q
             self.lastAction = action
 
-            if self.index == 3:
-                print(self.weights)
+            # write into a file
+            file = open(self.file, 'w')
+            data = json.dumps(self.weights)
+            file.write(data)
+            file.close()
 
         return action
 
@@ -130,8 +137,9 @@ class ApproximateQAgent(CaptureAgent):
             for Q, a in maxQs:
                 if a == Directions.STOP:
                     maxQs.remove((Q, a))
-        if self.index == 1:
-            print(Qs)
+
+        if len(maxQs) == 0:
+            return random.choice(actions)
         return random.choice(maxQs)
 
     def getQ(self, gameState, action):
@@ -256,13 +264,20 @@ class OffensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        weights = {'num of Food': -1.0,
-                   'dist to closest Food': -1.0,
-                   'dist to closest Ghost': 1.0,
-                   'dist to closest Capsule': -1,
-                   'dist to mid line': -1,
-                   'num of Capsules': -1
-                   }
+        self.file = os.path.join( os.path.dirname(__file__), "offensive.json")
+
+        f = open(self.file, "r")
+        data = f.read()
+        weights = json.loads(data)
+        f.close()
+
+        # weights = {'num of Food': -1.0,
+        #            'dist to closest Food': -1.0,
+        #            'dist to closest Ghost': 1.0,
+        #            'dist to closest Capsule': -1,
+        #            'dist to mid line': -1,
+        #            'num of Capsules': -1
+        #            }
         return weights
 
 
@@ -335,13 +350,23 @@ class DefensiveAQAgent(ApproximateQAgent):
         return features
 
     def getWeights(self):
-        return {'on defense': 1,
-                'dist to Invader': -1.0,
-                'num of Invaders': -1,
-                'stop': -0.5,
-                'reverse': -0.5,
-                "mean dist to food": -1
-                }
+
+        self.file = os.path.join( os.path.dirname(__file__), "defensive.json")
+
+        f = open(self.file, "r")
+        data = f.read()
+        weights = json.loads(data)
+        f.close()
+
+        return weights
+
+        # return {'on defense': 1,
+        #         'dist to Invader': -1.0,
+        #         'num of Invaders': -1,
+        #         'stop': -0.5,
+        #         'reverse': -0.5,
+        #         "mean dist to food": -1
+        #         }
 
 
 """
