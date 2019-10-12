@@ -101,10 +101,8 @@ class ReflexCaptureAgent(CaptureAgent):
         return {'successorScore': 1.0}
 class ValueIteration:
 
-    def __init__(self, gameState, index, heuristic, discount, epoch=500, timeLimit=0.9):
+    def __init__(self, gameState, index, epoch, heuristic, discount):
         self.index = index
-        self.epoch=epoch
-        self.timeLimit = timeLimit
         self.start = time.time()
         self.isRed = gameState.isOnRedTeam(index)
         self.discount = discount
@@ -141,7 +139,7 @@ class ValueIteration:
         for (x, y) in foods:  # set reward of each food as 10
             self.rewards[x][y] += heuristic["food"]
         for (x, y) in selffoods:  # set reward of each food as 10
-            if len(selffoods)<=5:
+            if len(selffoods)<=8:
               self.rewards[x][y] += heuristic["selffood"]
             else:
               self.rewards[x][y] =0
@@ -151,7 +149,7 @@ class ValueIteration:
             if len(foods)<=2:
                 self.rewards[x][y] += 5000 + heuristic["delivery"] * numCarrying #18 foods is enough, so  get back asap
             else:
-                self.rewards[x][y] += 1 + heuristic["delivery"] * numCarrying #add 1 So when there is no food left and no food carrying, the pacman is tend to go back
+                self.rewards[x][y] += heuristic["delivery"] * numCarrying
         for (x, y) in walls:  # set reward of each WALL as None
             self.rewards[x][y] = None
 
@@ -193,8 +191,6 @@ class ValueIteration:
             oldVs = self.Vs.copy()
             for i, j in self.toUpdate:
                 self.Vs[i, j] = self.discount * max(self.getSuccessors(oldVs, i, j).values())
-            if time.time() - self.start > self.timeLimit - 0.05:
-                break
 
 
     def buildPoliciesMap(self):
@@ -234,22 +230,27 @@ class ValueIteration:
 
 class ValueiterationAgent(CaptureAgent):
     def registerInitialState(self, gameState):
-        self.gamma = 0.9
+        self.start = gameState.getAgentPosition(self.index)
         CaptureAgent.registerInitialState(self, gameState)
 
     def chooseAction(self, gameState):
-        valueIteration = ValueIteration(gameState=gameState, index=self.index, discount=self.gamma,
-                                        heuristic=self.getHeuristic(), timeLimit=0.9)
-        (x, y) = gameState.getAgentPosition(self.index)
-        return valueIteration.policies[x, y]
+        valueIteration=ValueIteration(gameState, self.index, 150, self.getHeuristic(),0.9)
+        (x,y)=gameState.getAgentPosition(self.index)
+        return valueIteration.policies[x,y]
 
     def getHeuristic(self):
+
         """
         overwrite by subclass
         """
 
         features = util.Counter()
+        features['food'] = 1
+        features['capsule'] = 1
+        features['enemyGhost'] = -1
+        features['enemyPacman'] = 1
         return features
+
 
 
 class OffensiveReflexAgent(ValueiterationAgent):
@@ -281,42 +282,14 @@ class DefensiveReflexAgent(ValueiterationAgent):
   def getHeuristic(self):
       features = util.Counter()
       features['food'] = 100
-      features['selffood'] = 2000
+      features['selffood'] = 20000
       features['capsule'] = 0
-      features['delivery'] = 30
+      features['delivery'] = 40
       features['foodLostPenalty'] = -100
       features['enemyGhost'] = -1000
-      features['enemyPacman'] = 10000
+      features['enemyPacman'] = 50000
       return features
-"""
-  def getFeatures(self, gameState, action):
-    features = util.Counter()
-    successor = self.getSuccessor(gameState, action)
 
-    myState = successor.getAgentState(self.index)
-    myPos = myState.getPosition()
-
-    # Computes whether we're on defense (1) or offense (0)
-    features['onDefense'] = 1
-    if myState.isPacman: features['onDefense'] = 0
-
-    # Computes distance to invaders we can see
-    enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-    invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
-    features['numInvaders'] = len(invaders)
-    if len(invaders) > 0:
-      dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
-      features['invaderDistance'] = min(dists)
-
-    if action == Directions.STOP: features['stop'] = 1
-    rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
-    if action == rev: features['reverse'] = 1
-
-    return features
-
-  def getWeights(self, gameState, action):
-    return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
-"""
 
 
 
