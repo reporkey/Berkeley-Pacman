@@ -1,1 +1,3 @@
-{"num of Food": -1.0, "dist to closest Food": -1.0, "dist to closest Ghost": 1.0, "dist to closest Capsule": -1.0, "dist to mid line": -1.0, "num of Capsules": -1.0}
+{"num of food":-1,"dist to closest food":-1,"dist to closest ghost":1,"dist to closest capsule":-1,"dist to mid line":-1,"num of capsules":-1}
+{"num of food": -0.9713903485760502, "dist to closest food": -0.9990248061134517, "dist to closest ghost": 1.0010082971331298, "dist to closest capsule": -0.9991681560207462, "dist to mid line": -0.9998783546546551, "num of capsules": -0.9801619824390023}
+{"num of food": -0.933393367723808, "dist to closest food": -0.9976280599724493, "dist to closest ghost": 1.0024169532232436, "dist to closest capsule": -0.9978920038592545, "dist to mid line": -0.9997358071126132, "num of capsules": -0.957674759573543}
