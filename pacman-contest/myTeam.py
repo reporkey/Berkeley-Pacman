@@ -100,6 +100,8 @@ class ApproximateQAgent(CaptureAgent):
 
     def chooseAction(self, gameState):
 
+        # TODO: n-step proporgation
+
         legalActions = gameState.getLegalActions(self.index)
         action = None
 
@@ -119,13 +121,15 @@ class ApproximateQAgent(CaptureAgent):
             self.lastQ = Q
             self.lastAction = action
 
-            # write into a file
-            file = open(self.file, 'w')
-            data = json.dumps(self.weights)
-            file.write(data)
-            file.close()
-
         return action
+
+    def final(self, gameState):
+
+        # write into a file
+        file = open(self.file, 'a')
+        data = json.dumps(self.weights)
+        file.write(data)
+        file.close()
 
     def getMaxQ(self, gameState):
         actions = gameState.getLegalActions(self.index)
@@ -267,7 +271,7 @@ class OffensiveAQAgent(ApproximateQAgent):
         self.file = os.path.join( os.path.dirname(__file__), "offensive.json")
 
         f = open(self.file, "r")
-        data = f.read()
+        data = f.read().splitlines()[-1]
         weights = json.loads(data)
         f.close()
 
@@ -354,7 +358,7 @@ class DefensiveAQAgent(ApproximateQAgent):
         self.file = os.path.join( os.path.dirname(__file__), "defensive.json")
 
         f = open(self.file, "r")
-        data = f.read()
+        data = f.read().splitlines()[-1]
         weights = json.loads(data)
         f.close()
 
