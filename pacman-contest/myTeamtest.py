@@ -101,10 +101,8 @@ class ReflexCaptureAgent(CaptureAgent):
         return {'successorScore': 1.0}
 class ValueIteration:
 
-    def __init__(self, gameState, index, heuristic, discount, epoch=500, timeLimit=0.9):
+    def __init__(self, gameState, index, epoch, heuristic, discount):
         self.index = index
-        self.epoch=epoch
-        self.timeLimit = timeLimit
         self.start = time.time()
         self.isRed = gameState.isOnRedTeam(index)
         self.discount = discount
@@ -193,8 +191,6 @@ class ValueIteration:
             oldVs = self.Vs.copy()
             for i, j in self.toUpdate:
                 self.Vs[i, j] = self.discount * max(self.getSuccessors(oldVs, i, j).values())
-            if time.time() - self.start > self.timeLimit - 0.05:
-                break
 
 
     def buildPoliciesMap(self):
@@ -234,22 +230,27 @@ class ValueIteration:
 
 class ValueiterationAgent(CaptureAgent):
     def registerInitialState(self, gameState):
-        self.gamma = 0.9
+        self.start = gameState.getAgentPosition(self.index)
         CaptureAgent.registerInitialState(self, gameState)
 
     def chooseAction(self, gameState):
-        valueIteration = ValueIteration(gameState=gameState, index=self.index, discount=self.gamma,
-                                        heuristic=self.getHeuristic(), timeLimit=0.9)
-        (x, y) = gameState.getAgentPosition(self.index)
-        return valueIteration.policies[x, y]
+        valueIteration=ValueIteration(gameState, self.index, 100, self.getHeuristic(),0.9)
+        (x,y)=gameState.getAgentPosition(self.index)
+        return valueIteration.policies[x,y]
 
     def getHeuristic(self):
+
         """
         overwrite by subclass
         """
 
         features = util.Counter()
+        features['food'] = 1
+        features['capsule'] = 1
+        features['enemyGhost'] = -1
+        features['enemyPacman'] = 1
         return features
+
 
 
 class OffensiveReflexAgent(ValueiterationAgent):
@@ -281,7 +282,7 @@ class DefensiveReflexAgent(ValueiterationAgent):
   def getHeuristic(self):
       features = util.Counter()
       features['food'] = 100
-      features['selffood'] = 2000
+      features['selffood'] = 1000
       features['capsule'] = 0
       features['delivery'] = 30
       features['foodLostPenalty'] = -100
