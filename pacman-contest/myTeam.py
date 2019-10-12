@@ -31,7 +31,7 @@ class ValueIteration:
 
     def __init__(self, gameState, index, heuristic, discount, epoch=500, timeLimit=0.9):
         self.index = index
-        self.epoch=epoch
+        self.epoch = epoch
         self.timeLimit = timeLimit
         self.start = time.time()
         self.isRed = gameState.isOnRedTeam(index)
@@ -49,6 +49,7 @@ class ValueIteration:
     def buildVMap(self, gameState, heuristic):
         walls = gameState.getWalls().asList()
         foods = gameState.getBlueFood().asList() if self.isRed else gameState.getRedFood().asList()
+        selffoods = gameState.getRedFood().asList() if self.isRed else gameState.getBlueFood().asList()
         capsules = gameState.getBlueCapsules() if self.isRed else gameState.getRedCapsules()
         width, height = gameState.getWalls().width, gameState.getWalls().height
         numCarrying = gameState.getAgentState(self.index).numCarrying
@@ -64,10 +65,21 @@ class ValueIteration:
 
         for (x, y) in foods:
             self.rewards[x][y] += heuristic["food"]
-        for (x, y) in capsules:
+
+        for (x, y) in selffoods:  # set reward of each food as 10
+            if len(selffoods) <= 5:
+                self.rewards[x][y] += heuristic["selffood"]
+            else:
+                self.rewards[x][y] = 0
+        for (x, y) in capsules:  # set reward of each capsule as 100
             self.rewards[x][y] += heuristic["capsule"]
         for (x, y) in deliveryLine:
-            self.rewards[x][y] += heuristic["delivery"] * numCarrying
+            if len(foods) <= 2:
+                self.rewards[x][y] += 5000 + heuristic[
+                    "delivery"] * numCarrying  # 18 foods is enough, so  get back asap
+            else:
+                self.rewards[x][y] += 1 + heuristic[
+                    "delivery"] * numCarrying  # add 1 So when there is no food left and no food carrying, the pacman is tend to go back
         for (x, y) in walls:  # set reward of each WALL as None
             self.rewards[x][y] = None
 
@@ -77,20 +89,24 @@ class ValueIteration:
             enemyState = gameState.getAgentState(enemyIndex)
             if enemyState.configuration is not None:
                 x, y = enemyState.getPosition()
-                # I'm Ghost, enemy is pacman
                 if enemyState.isPacman:
-                    # If I get scared
                     if gameState.getAgentState(self.index).scaredTimer > 0:
                         self.rewards[int(x)][int(y)] += heuristic["enemyGhost"]
+                        # print(self.rewards[int(x)][int(y)])
                     else:
                         self.rewards[int(x)][int(y)] += heuristic["enemyPacman"]
                 # I'm pacman, enemy is ghost
-                if not enemyState.isPacman and gameState.getAgentState(self.index).isPacman:
+                elif gameState.getAgentState(self.index).isPacman and not enemyState.isPacman:
                     if enemyState.scaredTimer > 0:
                         self.rewards[int(x)][int(y)] += heuristic["enemyPacman"]
                     else:
-                        self.rewards[int(x)][int(y)] += \
-                            (heuristic["enemyGhost"] + heuristic["foodLostPenalty"] * numCarrying)
+                        self.rewards[int(x)][int(y)] += (
+                                heuristic["enemyGhost"] + heuristic["foodLostPenalty"] * numCarrying)
+                # I'm ghost, enemy is ghost
+                else:
+                    self.rewards[int(x)][int(y)] += heuristic["enemyPacman"]
+
+        # TODO: assign "food delivery" reward based on number of its eaten; also higher penalty on ghost if eaten more
 
         # list of position that required to be update during iterations
         self.toUpdate = [pos for pos, x in np.ndenumerate(self.rewards) if x == 0]
@@ -161,27 +177,40 @@ class ValueIterationAgent(CaptureAgent):
         return features
 
 
-class OffensiveVIAgent(ValueIterationAgent):
+class OffensiveReflexAgent(ValueIterationAgent):
+    """
+    A reflex agent that seeks food. This is an agent
+    we give you to get an idea of what an offensive agent might look like,
+    but it is by no means the best or only way to build an offensive agent.
+    """
 
     def getHeuristic(self):
         features = util.Counter()
         features['food'] = 100
+        features['selffood'] = 0
         features['capsule'] = 200
-        features['delivery'] = 30
-        features['foodLostPenalty'] = -100
-        features['enemyGhost'] = -10000
-        features['enemyPacman'] = 200
-        return features
-
-
-class DefensiveVIAgent(ValueIterationAgent):
-
-    def getHeuristic(self):
-        features = util.Counter()
-        features['food'] = 100
-        features['capsule'] = 0
         features['delivery'] = 20
         features['foodLostPenalty'] = -100
         features['enemyGhost'] = -10000
-        features['enemyPacman'] = 50000
+        features['enemyPacman'] = 50
+        return features
+
+
+class DefensiveReflexAgent(ValueIterationAgent):
+    """
+    A reflex agent that keeps its side Pacman-free. Again,
+    this is to give you an idea of what a defensive agent
+    could be like.  It is not the best or only way to make
+    such an agent.
+    """
+
+    def getHeuristic(self):
+        features = util.Counter()
+        features['food'] = 100
+        features['selffood'] = 2000
+        features['capsule'] = 0
+        features['delivery'] = 30
+        features['foodLostPenalty'] = -100
+        features['enemyGhost'] = -1000
+        features['enemyPacman'] = 10000
         return features
