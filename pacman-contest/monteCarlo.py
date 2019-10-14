@@ -1,4 +1,17 @@
-# baselineTeam.py
+"""
+Since the game is not in prefect knowledge, the positions of enemy agent are not given, Monte Carlo tree search do not
+able to expand or simulate enemies agent. Therefore, we apply "delete relaxing" from classical planning to this MDP,
+the idea is "not concerning enemies", neither expanding or simulating. It is reasonable in uninformed path searching,
+and should works pretty good in our situation. The game rules that when enemy agent is in 5 unit distance from my agent
+position, then the position of that enemy agent will be given. Otherwise (manhattan distance > 5), rather than a
+coordination, a noised maze distance is given. From the view of offensive agent, when enemy is far away from my
+position (d > 5), its position may not as important as the position of foods.
+
+Not sure about the performance on defensive agent, a reinforcement learning may outweigh.
+
+Then it rise up another issue, how to treat my other agents. The current solution is to keep expanding and simulating.
+
+"""
 
 from captureAgents import CaptureAgent
 import distanceCalculator
@@ -7,6 +20,7 @@ from game import Directions
 import game
 from util import nearestPoint
 import numpy as np
+import os, json
 
 
 #################
@@ -15,20 +29,6 @@ import numpy as np
 
 def createTeam(firstIndex, secondIndex, isRed,
                first='OffensiveReflexAgent', second='DefensiveReflexAgent'):
-    """
-    This function should return a list of two agents that will form the
-    team, initialized using firstIndex and secondIndex as their agent
-    index numbers.  isRed is True if the red team is being created, and
-    will be False if the blue team is being created.
-
-    As a potentially helpful development aid, this function can take
-    additional string-valued keyword arguments ("first" and "second" are
-    such arguments in the case of this function), which will come from
-    the --redOpts and --blueOpts command-line arguments to capture.py.
-    For the nightly contest, however, your team will be created without
-    any extra arguments, so you should make sure that the default
-    behavior is what you want for the nightly contest.
-    """
     return [eval(first)(firstIndex), eval(second)(secondIndex)]
 
 
@@ -42,84 +42,103 @@ class MonteCarloAgent(CaptureAgent):
     """
 
     def registerInitialState(self, gameState):
-        self.gamma = 1
-        self.Cp = 0.7       # UCT
-        self.epsilon = 0.1  # e-greedy
-        self.init()
+
         CaptureAgent.registerInitialState(self, gameState)
 
+        self.alpha = 0.01   # learning rate
+        self.gamma = 0.8    # discounted rate
+        self.Cp = 2         # UCT
+        self.epsilon = 0.1  # e-greedy
+
+        self.totalNumOppositeFood = len(self.getFood(gameState).asList())
+        self.totalNumOppositeCapsules = len(self.getCapsules(gameState))
+        self.lastDefending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(
+            gameState)
+        self.enemiesPos = [gameState.getAgentPosition(i) if i in self.getOpponents(gameState) else None for i in
+                           range(4)]
+        width = gameState.getWalls().width
+        height = gameState.getWalls().height
+        self.mapArea = (gameState.getWalls().width - 2) * (gameState.getWalls().height - 2)
+        self.midLine = [(width // 2 - 1 if self.red else width // 2, y) for y in range(1, height)]
+        self.midLine = [(x, y) for (x, y) in self.midLine if not gameState.hasWall(x, y)]
+        self.enemyMidLine = [(width // 2 if self.red else width // 2 - 1, y) for y in range(1, height)]
+        self.enemyMidLine = [(x, y) for (x, y) in self.midLine if not gameState.hasWall(x, y)]
+
+        self.lastAction = None
+        self.lastQ = 0
+        self.lastFeatures = util.Counter()
+
+        self.file = ""
+        self.weights = self.getWeights()
+
     def chooseAction(self, gameState):
-        return self.monteCarloSearch(gameState)
 
-    """
-    Since the game is not in prefect knowledge, the positions of enemy agent are not given, Monte Carlo tree search do not 
-    able to expand or simulate enemies agent. Therefore, we apply "delete relaxing" from classical planning to this MDP, 
-    the idea is "not concerning enemies", neither expanding or simulating. It is reasonable in uninformed path searching, 
-    and should works pretty good in our situation. The game rules that when enemy agent is in 5 unit distance from my agent
-    position, then the position of that enemy agent will be given. Otherwise (manhattan distance > 5), rather than a 
-    coordination, a noised maze distance is given. From the view of offensive agent, when enemy is far away from my 
-    position (d > 5), its position may not as important as the position of foods. 
-    
-    Not sure about the performance on defensive agent, a reinforcement learning may outweigh.
-    
-    Then it rise up another issue, how to treat my other agents. The current solution is to keep expanding and simulating. 
-         
-    """
+        self.startTime = time.time()
+        self.actions = gameState.getLegalActions(self.index)
+        self.featuresOfActions = [util.Counter() for _ in self.actions]
+        self.Qs = [-np.inf for _ in self.actions]
 
-    def monteCarloSearch(self, gameState):
-        # print("=================================NEW TURN====================================")
+        # update enemy position info
+        self.updateEnemiesPos(gameState)
+
+        # MCT search for best estimate
+        self.MCTSearch(gameState)
+
+        action = self.actions[np.argmax(self.Qs)]
+        feature = self.featuresOfActions[np.argmax(self.Qs)]
+        Q = np.max(self.Qs)
+
+        # update weight, except 1st time step
+        if self.getPreviousObservation() is not None and self.lastAction is not None:
+            self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState, Q=Q)
+
+        self.lastQ = Q
+        self.lastAction = action
+        self.lastFeatures = feature
+
+        return action
+
+    def MCTSearch(self, gameState):
 
         self.toExpand = []
-        self.root = Tree(i=self.index, s=gameState, a=None)
-        if len(gameState.getLegalActions(self.index)) != 0:  # for case if born in an island
-            self.toExpand.append(self.root)
+        self.root = Tree(index=self.index, state=gameState, action=None, depth=0)
 
-        start = time.time()
         n = 0
 
         while True:
             n = n + 1
 
-            # print("\n==========select=============")
             selectNode, selectAction = self.selectNode()
-            # print("==========expandNode=========")
             node = self.expandNode(selectNode, selectAction)
-            # print("==========simulate===========")
             V = self.simulate(node)
-            # print("==========backprop===========")
             self.backprop(V, node)
-            # print("\n")
-            end = time.time()
-            if end - start > 0.5:
+            if time.time() - self.startTime > 0.7:
                 break
         maxIndex = np.argmax([self.gamma * child.V for child in self.root.children])
-        decision = self.root.children[int(maxIndex)].a
-        """=================debug=================="""
-        if self.role == "Offensive":
-            for child in self.root.children:
-                if child.a == Directions.NORTH:
-                    print("NORTH:\t", child.N, "\t", child.V)
-                elif child.a == Directions.SOUTH:
-                    print("SOUTH:\t", child.N, "\t", child.V)
-                elif child.a == Directions.WEST:
-                    print("WEST:\t", child.N, "\t", child.V)
-                elif child.a == Directions.EAST:
-                    print("EAST:\t", child.N, "\t", child.V)
-                elif child.a == Directions.STOP:
-                    print("STOP:\t", child.N, "\t", child.V)
+        decision = self.root.children[int(maxIndex)].action
+        for child in self.root.children:
+            if child.action == Directions.NORTH:
+                print("NORTH:\t", child.N, "\t", child.V)
+            elif child.action == Directions.SOUTH:
+                print("SOUTH:\t", child.N, "\t", child.V)
+            elif child.action == Directions.WEST:
+                print("WEST:\t", child.N, "\t", child.V)
+            elif child.action == Directions.EAST:
+                print("EAST:\t", child.N, "\t", child.V)
+            elif child.action == Directions.STOP:
+                print("STOP:\t", child.N, "\t", child.V)
 
-            print("total: ", n, self.root.s.getAgentPosition(self.root.i), self.root.i, decision, "\n")
-        return decision
+        print("total: ", n, self.root.state.getAgentPosition(self.root.index), self.root.index, decision, "\n")
 
     def selectNode(self):
         node = self.root
         action = None
-        actions = node.s.getLegalActions(node.i)
+        actions = node.state.getLegalActions(node.index)
 
-        while (len(node.children) > 0 or len(actions) > 0) and not node.s.isOver():
+        while (len(node.children) > 0 or len(actions) > 0) and not node.state.isOver():
 
             # choose action
-            existedActions = set([each.a for each in node.children])
+            existedActions = set([each.action for each in node.children])
             actions = list(set(actions) - existedActions)
             if len(actions) > 0:
                 action = np.random.choice(actions)
@@ -127,67 +146,36 @@ class MonteCarloAgent(CaptureAgent):
 
             """ UCB1 (UCT) """
             """ Since the Q is not normalized between attacker and defender, UCT is not a good choice """
-            # UCB1 = np.array([child.V + 2 * self.Cp * np.sqrt(2 * np.log(node.N) / child.N) for child in node.children])
-            # node = node.children[np.random.choice(np.flatnonzero(UCB1 == UCB1.max()))]
-            # actions = node.s.getLegalActions(node.i)
+            UCB1 = np.array([child.V + 2 * self.Cp * np.sqrt(2 * np.log(node.N) / child.N) for child in node.children])
+            node = node.children[np.random.choice(np.flatnonzero(UCB1 == UCB1.max()))]
+            actions = node.state.getLegalActions(node.index)
 
             """ e-greedy """
-            if np.random.random() < self.epsilon:
-                node = np.random.choice(node.children)
-            else:
-                Qvalues = np.array([child.V for child in node.children])
-                node = node.children[np.random.choice(np.flatnonzero(Qvalues == Qvalues.max()))]
-            actions = node.s.getLegalActions(node.i)
+            # if np.random.random() < self.epsilon:
+            #     node = np.random.choice(node.children)
+            # else:
+            #     Qvalues = np.array([child.V for child in node.children])
+            #     node = node.children[np.random.choice(np.flatnonzero(Qvalues == Qvalues.max()))]
+            # actions = node.state.getLegalActions(node.index)
 
-        # print(node.s.getAgentPosition(node.i), node.i, actions, "=>", action)
+        # print(node.state.getAgentPosition(node.index), node.index, actions, "=>", action)
         return node, action
 
-    # def selectNode(self):
-    #     while len(self.toExpand) > 0:  # for case if have developed all of states
-    #
-    #         # TODO: Multi-armed bandit, UCB
-    #
-    #         node = random.choice(self.toExpand)
-    #         actions = node.s.getLegalActions(node.i)
-    #         if len(actions) == 0:  # jump to begin if this node is dead end
-    #             self.toExpand.remove(node)
-    #             continue
-    #
-    #         # remove actions if that leads to an existed child
-    #         toRemove = []
-    #         for a in actions:
-    #             for child in node.children:
-    #                 if child.a == a:
-    #                     toRemove.append(a)
-    #         for each in toRemove:
-    #             actions.remove(each)
-    #
-    #         if len(actions) <= 0:
-    #             self.toExpand.remove(node)
-    #             continue
-    #         elif len(actions) == 1:
-    #             self.toExpand.remove(node)
-    #
-    #         action = random.choice(actions)
-    #         # print(node.s.getAgentPosition(node.i), node.i, actions, "=>", action)
-    #         return node, action
-
     def expandNode(self, parent, action):
-        successorState = getSuccessor(parent.s, parent.i, action)
-        nextIndex = parent.i + 1 if parent.i < 3 else 0
-        while successorState.getAgentPosition(nextIndex) is None:
-            nextIndex = nextIndex + 1 if nextIndex < 3 else 0
-        successor = Tree(i=nextIndex, s=successorState, a=action, parent=parent)
+        successorState = getSuccessor(parent.state, parent.index, action)
+        successor = Tree(index=parent.index, state=successorState, action=action, depth=parent.depth + 1, parent=parent)
         parent.children.append(successor)
         self.toExpand.append(successor)
-        # print("expand Node from", parent.s.getAgentPosition(parent.i), action, "to ", successor.s.getAgentPosition(parent.i), "index: ", parent.i)
+        # print("expand Node from", parent.state.getAgentPosition(parent.index), action, "to ", successor.state.getAgentPosition(parent.index), "index: ", parent.index)
         return successor
 
     def simulate(self, node):
-        if node.parent.i == self.index:
-            return self.evaluate(node.parent.s, node.a)
-        else:
-            return -np.inf
+        features = self.getFeatures(node.parent.state, node.action)
+        Q = features * self.weights
+        if node.depth == 1:
+            self.featuresOfActions[self.actions.index(node.action)] = features
+            self.Qs[self.actions.index(node.action)] = Q
+        return Q
 
     def backprop(self, V, successor):
         successor.V = V  # discounted future reward
@@ -195,110 +183,264 @@ class MonteCarloAgent(CaptureAgent):
 
         node = successor.parent
         while node is not None:
-            node.V = np.max([node.V] + [(self.gamma * child.V) for child in node.children]) # max among (self v & childrens' V)
             node.N += 1
+            node.V = np.sum([node.V] + [(self.gamma * child.V) * child.N for child in node.children]) / node.N
             node = node.parent
 
-    def evaluate(self, gameState, action):
+    def final(self, gameState):
+
+        # update weights
+        self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState, Q=self.lastQ / self.gamma)
+
+        # write weights into a file
+        file = open(self.file, 'a')
+        data = json.dumps(self.weights)
+        file.write(data + '\n')
+        file.close()
+
+    def updateWeights(self, preGameState, gameState, Q):
+
+        reward = self.getReward(gameState, preGameState)
+        for feature in self.lastFeatures:
+            self.weights[feature] += self.alpha \
+                                     * (reward + self.gamma * Q - self.lastQ) \
+                                     * self.lastFeatures[feature]
+            if self.weights[feature] < 0:
+                self.weights[feature] = 0
+
+    def updateEnemiesPos(self, gameState):
+
+        myPos = gameState.getAgentPosition(self.index)
+        defending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
+
+        # predict pos by last eaten food/capsule
+        enemiesDists = [self.getMazeDistance(myPos, self.enemiesPos[i])
+                        if i in self.getOpponents(gameState)
+                           and self.enemiesPos[i] is not None
+                        else np.nan
+                        for i in range(4)]
+        if enemiesDists.count(not np.nan) > 0:
+            closedEnemyIndex = np.nanargmin(enemiesDists)
+        else:
+            closedEnemyIndex = self.getOpponents(gameState)[0]
+        for each in self.lastDefending:
+            if each not in defending:
+                self.enemiesPos[closedEnemyIndex] = each
+        self.lastDefending = defending
+
+        # observe pos by own vision
+        for i in self.getOpponents(gameState):
+            if gameState.getAgentState(i).getPosition() is not None:
+                self.enemiesPos[i] = gameState.getAgentState(i).getPosition()
+
+        # remove position of enemy that lost tracking when re-explores fog of war
+        visibleEnemiesPos = [gameState.getAgentState(i).getPosition()
+                             if i in self.getOpponents(gameState)
+                             else None
+                             for i in range(4)]
+        for i in self.getOpponents(gameState):
+            if self.enemiesPos[i] is not None \
+                    and distanceCalculator.manhattanDistance(myPos, self.enemiesPos[i]) < 5 \
+                    and self.enemiesPos[i] not in visibleEnemiesPos:
+                self.enemiesPos[i] = None
+
+    def getReward(self, gameState, preGameState):
         """
-        Computes a linear combination of features and feature weights
+        Overwrite
         """
-        features = self.getFeatures(gameState, action)
-        weights = self.getWeights(gameState, action)
-        return features * weights
+        return 0
 
     def getFeatures(self, gameState, action):
         """
-        Returns a counter of features for the state
+        Overwrite
         """
         features = util.Counter()
-        successor = getSuccessor(gameState, self.index, action)
-        features['successorScore'] = self.getScore(successor)
         return features
 
-    def getWeights(self, gameState, action):
+    def getWeights(self):
         """
-        Normally, weights do not depend on the gamestate.  They can be either
-        a counter or a dictionary.
+        Overwrite
         """
-        return {'successorScore': 1.0}
-
-    def init(self):
-        self.role = ""
-
+        weights = util.Counter()
+        return weights
 
 class OffensiveReflexAgent(MonteCarloAgent):
 
-    def init(self):
-        self.role = "Offensive"
+    def getReward(self, gameState, preGameState):
+
+        # successfully delivery food (only count positive score)
+        reward = gameState.getScore() - preGameState.getScore()
+        reward = reward if self.red else -reward
+        if reward < 0:
+            reward = 0
+
+        eaten = len(self.getFood(preGameState).asList() + self.getCapsules(preGameState)) \
+                - len(self.getFood(gameState).asList() + self.getCapsules(gameState))
+
+        # eat food and capsules
+        if eaten > 0:
+            reward += 0.5
+
+        # lose food
+        elif eaten < 0:
+            reward -= (10 + eaten)
+
+        # do nothing
+        else:
+            reward -= 0.1
+
+        return reward
 
     def getFeatures(self, gameState, action):
+
         features = util.Counter()
         successor = getSuccessor(gameState, self.index, action)
+        myPos = successor.getAgentPosition(self.index)
+        numCarryingFood = successor.getAgentState(self.index).numCarrying
         foodList = self.getFood(successor).asList()
-        features['#Food'] = len(foodList)  # self.getScore(successor)
 
-        # Compute distance to the nearest food
+        # feature: 'num of food'
+        # feature: 'dist to closest food'
+        if len(foodList) > 2:
+            features['num of food'] = - len(foodList) / self.totalNumOppositeFood
+            features['dist to closest food'] = - min(
+                [self.getMazeDistance(myPos, food) for food in foodList]) / self.mapArea
 
-        if len(foodList) > 0:  # This should always be True, but better safe than sorry
-            myPos = successor.getAgentState(self.index).getPosition()
-            minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
-            features['distanceToFood'] = minDistance
+        # feature: 'dist to closest ghost'
+        distsToGhosts = [self.getMazeDistance(myPos, pos)
+                         for index, pos in enumerate(self.enemiesPos)
+                         if index in self.getOpponents(successor)
+                         and pos is not None
+                         and not successor.getAgentState(index).isPacman
+                         and successor.getAgentState(index).scaredTimer < 3]
+        if len(distsToGhosts) > 0:
+            features['dist to closest ghost'] = ((10 + numCarryingFood) / self.totalNumOppositeFood) \
+                                                * min(distsToGhosts) / self.mapArea
+
+        # feature 'dist to closest capsule'
+        # feature 'num of capsules'
+        flag = [True if successor.getAgentState(index).scaredTimer < dist < 10 else False
+                for index, dist in enumerate(successor.getAgentDistances())
+                if index in self.getOpponents(successor)]
+        if True in flag:
+            distToCapsules = [self.getMazeDistance(myPos, pos) for pos in self.getCapsules(successor)]
+            if len(distToCapsules) > 0:
+                features['dist to closest capsule'] = - min(distToCapsules) / self.mapArea
+                features['num of capsules'] = - len(self.getCapsules(successor)) / self.totalNumOppositeCapsules
+
+        # feature 'dist to mid line'
+        distToMidLine = [self.getMazeDistance(myPos, each) for each in self.midLine]
+        features['dist to mid line'] = - (min(distToMidLine) / self.mapArea) \
+                                       * (numCarryingFood / self.totalNumOppositeFood)
+
+        # Normalize and return
+        features.divideAll(len(self.weights))
+
         return features
 
-    def getWeights(self, gameState, action):
-        return {'#Food': -100, 'distanceToFood': -1}
+    def getWeights(self):
+
+        self.file = os.path.join(os.path.dirname(__file__), "offensive.json")
+
+        f = open(self.file, "r")
+        data = f.read().splitlines()[-1]
+        weights = json.loads(data)
+        f.close()
+
+        return weights
 
 
 class DefensiveReflexAgent(MonteCarloAgent):
-    """
-    A reflex agent that keeps its side Pacman-free. Again,
-    this is to give you an idea of what a defensive agent
-    could be like.  It is not the best or only way to make
-    such an agent.
-    """
-    def init(self):
-        self.role = "Defensive"
+
+    def getReward(self, gameState, preGameState):
+
+        # enemy successfully delivery food (only count negative score)
+        reward = gameState.getScore() - preGameState.getScore()
+        reward = reward if self.red else -reward
+        if reward > 0:
+            reward = 0
+
+        eaten = len(self.getFoodYouAreDefending(preGameState).asList() + self.getCapsulesYouAreDefending(preGameState)) \
+                - len(self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState))
+
+        # enemy loses food
+        if eaten < 0:
+            reward += 10
+
+        # enemy eats food
+        else:
+            reward -= 0.5
+
+        return reward
 
     def getFeatures(self, gameState, action):
+
         features = util.Counter()
         successor = getSuccessor(gameState, self.index, action)
-
         myState = successor.getAgentState(self.index)
         myPos = myState.getPosition()
 
-        # Computes whether we're on defense (1) or offense (0)
-        features['onDefense'] = 1
-        if myState.isPacman: features['onDefense'] = 0
+        # feature 'dist to invader'
+        distsToInvaders = [self.getMazeDistance(myPos, pos)
+                           for index, pos in enumerate(self.enemiesPos)
+                           if index in self.getOpponents(successor)
+                           and pos is not None
+                           and successor.getAgentState(index).isPacman]
+        if myState.scaredTimer > 0:
+            distsToInvaders = [abs(dist - 2) for dist in distsToInvaders]
+        if len(distsToInvaders) > 0:
+            features['dist to invader'] = - min(distsToInvaders) / self.mapArea
 
-        # Computes distance to invaders we can see
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
-        features['numInvaders'] = len(invaders)
-        if len(invaders) > 0:
-            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
-            features['invaderDistance'] = min(dists)
+        # feature 'num of Invaders'
+        invaders = [successor.getAgentState(i).isPacman for i in self.getOpponents(successor)]
+        features['num of invaders'] = - len(invaders) / len(self.getOpponents(gameState))
 
-        if action == Directions.STOP: features['stop'] = 1
-        rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
-        if action == rev: features['reverse'] = 1
+        # feature 'mean dist to food'
+        allFood = self.getFoodYouAreDefending(gameState).asList()
+        distToFood = [self.getMazeDistance(myPos, food) for food in allFood]
+        if len(distToFood) > 0:
+            features['mean dist to food'] = - sum(distToFood) / len(distToFood) / self.mapArea
+
+        # feature 'dist to food that closed to mid line'
+        midLineToFood = []
+        for food in allFood:
+            dist = [self.getMazeDistance(food, pos) for pos in self.enemyMidLine]
+            if len(dist) > 0:
+                midLineToFood.append(min(dist))
+            else:
+                midLineToFood.append(np.nan)
+        if midLineToFood.count(np.nan) < len(midLineToFood):
+            foodIndex = np.nanargmin(midLineToFood)
+            features['dist to food that closed to mid line'] \
+                = - self.getMazeDistance(myPos, allFood[foodIndex]) / self.mapArea
+
+        # Normalize and return
+        features.divideAll(len(self.weights))
 
         return features
 
-    def getWeights(self, gameState, action):
-        return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+    def getWeights(self):
+
+        self.file = os.path.join(os.path.dirname(__file__), "defensive.json")
+
+        f = open(self.file, "r")
+        data = f.read().splitlines()[-1]
+        weights = json.loads(data)
+        f.close()
+
+        return weights
 
 
 class Tree:
-    def __init__(self, i, s, a, parent=None):
+    def __init__(self, index, state, action, depth, parent=None):
         self.parent = parent
         self.children = []
-        self.i = i  # index that will make a move in this node
-        self.s = s  # gameState
-        self.a = a  # action from parent
+        self.index = index  # index that will make a move in this node
+        self.state = state  # gameState
+        self.action = action  # action from parent
+        self.depth = depth
         self.V = -np.inf  # evaluation
         self.N = 0  # visited times
-        # self.r = r  # reward
 
 
 def getSuccessor(gameState, index, action):
