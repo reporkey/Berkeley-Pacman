@@ -81,7 +81,10 @@ class ValueIterationAgent(CaptureAgent):
             self.rewards[-1][y] = None
 
         for (x, y) in food:
-            self.rewards[x][y] += heuristic["food"]
+            if len(food) <= 2:
+                self.rewards[x][y] +=0
+            else:
+                self.rewards[x][y] += heuristic["food"]
 
         # defending food
         # for (x, y) in defendingFood:
@@ -247,7 +250,7 @@ class OffensiveVIAgent(ValueIterationAgent):
     def getHeuristic(self):
         features = util.Counter()
         features['food'] = 100
-        features['defendingFood'] = 0
+        #features['defendingFood'] = 0
         features['capsule'] = 200
         features['delivery'] = 20
         features['foodLostPenalty'] = -100
@@ -261,10 +264,10 @@ class DefensiveVIAgent(ValueIterationAgent):
     def getHeuristic(self):
         features = util.Counter()
         features['food'] = 100
-        features['defendingFood'] = 20000
+        #features['defendingFood'] = 20000
         features['capsule'] = 0
         features['delivery'] = 40
         features['foodLostPenalty'] = -100
         features['enemyGhost'] = -1000
-        features['enemyPacman'] = 50000
+        features['enemyPacman'] = 100000
         return features
