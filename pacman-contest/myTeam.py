@@ -219,12 +219,19 @@ class ApproximateQAgent(CaptureAgent):
 
         # observe pos by last eaten food/capsule
         dist = lambda pos: self.getMazeDistance(gameState.getAgentPosition(self.index), pos)
-        enemiesDists = [dist(self.enemiesPos[i]) if i in self.getOpponents(gameState) else None for i in range(4)]
-        closedIndex = enemiesDists.index(min(x for x in enemiesDists if x is not None))
+        enemiesDists = [dist(self.enemiesPos[i])
+                        if i in self.getOpponents(gameState)
+                           and self.enemiesPos[i] is not None
+                        else None
+                        for i in range(4)]
+        if enemiesDists.count(not None) > 0:
+            closedEnemyIndex = enemiesDists.index(min(x for x in enemiesDists if x is not None))
+        else:
+            closedEnemyIndex = self.getOpponents(gameState)[0]
         defending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
         for each in self.lastDefending:
             if each not in defending:
-                self.enemiesPos[closedIndex] = each
+                self.enemiesPos[closedEnemyIndex] = each
         self.lastDefending = defending
 
         # observe pos by own vision
@@ -232,7 +239,7 @@ class ApproximateQAgent(CaptureAgent):
             if gameState.getAgentState(i).getPosition() is not None:
                 self.enemiesPos[i] = gameState.getAgentState(i).getPosition()
 
-        # fresh map
+        # remove position of lost enemy when refreshing fog of war
         myPos = gameState.getAgentPosition(self.index)
         visibleEnemiesPos = []
         for i in range(4):
@@ -244,10 +251,13 @@ class ApproximateQAgent(CaptureAgent):
             else:
                 visibleEnemiesPos.append(None)
 
-        for i in range(len(self.enemiesPos)):
-            if distanceCalculator.manhattanDistance(myPos, self.enemiesPos[i]) < 5 \
+        for i in self.getOpponents(gameState):
+            if self.enemiesPos[i] is not None \
+                    and distanceCalculator.manhattanDistance(myPos, self.enemiesPos[i]) < 5 \
                     and self.enemiesPos[i] not in visibleEnemiesPos:
                 self.enemiesPos[i] = None
+
+        print(self.enemiesPos)
 
 
 
@@ -390,7 +400,8 @@ class DefensiveAQAgent(ApproximateQAgent):
         elif len(invaders) > 0:
             distPredict = [self.getMazeDistance(myPos, self.enemiesPos[i])
                            for i in self.getOpponents(gameState)
-                           if gameState.getAgentState(i).isPacman]
+                           if gameState.getAgentState(i).isPacman
+                           and self.enemiesPos[i] is not None]
             if len(distPredict) > 0:
                 features['dist to invader'] = - min(distPredict) / self.mapArea
 
