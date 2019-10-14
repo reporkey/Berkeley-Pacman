@@ -262,6 +262,10 @@ class OffensiveAQAgent(ApproximateQAgent):
         if reward < 0:
             reward = 0
 
+        foodEaten = len(self.getFood(preGameState).asList() - len(self.getFood(gameState).asList()))
+        if foodEaten > 0:
+            reward += 0
+
         # if be eaten, penalty -10
         initPos = gameState.getInitialAgentPosition(self.index)
         if preGameState.getAgentPosition(self.index) != initPos \
