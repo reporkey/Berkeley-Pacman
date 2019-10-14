@@ -75,7 +75,6 @@ class ApproximateQAgent(CaptureAgent):
         self.gamma = 0.8
         self.totalNumOppositeFood = len(self.getFood(gameState).asList())
         self.totalNumOppositeCapsules = len(self.getCapsules(gameState))
-        self.initDefending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
         self.lastDefending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
         self.enemiesPos = [gameState.getAgentPosition(i) if i in self.getOpponents(gameState) else None for i in range(4)]
         width = gameState.getWalls().width
@@ -218,7 +217,7 @@ class ApproximateQAgent(CaptureAgent):
 
     def updateEnemiesPos(self, gameState):
 
-        # observe pos by last eaten food
+        # observe pos by last eaten food/capsule
         dist = lambda pos: self.getMazeDistance(gameState.getAgentPosition(self.index), pos)
         enemiesDists = [dist(self.enemiesPos[i]) if i in self.getOpponents(gameState) else None for i in range(4)]
         closedIndex = enemiesDists.index(min(x for x in enemiesDists if x is not None))
@@ -232,6 +231,25 @@ class ApproximateQAgent(CaptureAgent):
         for i in self.getOpponents(gameState):
             if gameState.getAgentState(i).getPosition() is not None:
                 self.enemiesPos[i] = gameState.getAgentState(i).getPosition()
+
+        # fresh map
+        myPos = gameState.getAgentPosition(self.index)
+        visibleEnemiesPos = []
+        for i in range(4):
+            if i in self.getOpponents(gameState):
+                if gameState.getAgentState(i).getPosition() is not None:
+                    visibleEnemiesPos.append(gameState.getAgentPosition(i))
+                else:
+                    visibleEnemiesPos.append(None)
+            else:
+                visibleEnemiesPos.append(None)
+
+        for i in range(len(self.enemiesPos)):
+            if distanceCalculator.manhattanDistance(myPos, self.enemiesPos[i]) < 5 \
+                    and self.enemiesPos[i] not in visibleEnemiesPos:
+                self.enemiesPos[i] = None
+
+
 
 
 class OffensiveAQAgent(ApproximateQAgent):
