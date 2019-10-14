@@ -1,16 +1,3 @@
-# myTeam.py
-# ---------
-# Licensing Information:  You are free to use or extend these projects for
-# educational purposes provided that (1) you do not distribute or publish
-# solutions, (2) you retain this notice, and (3) you provide clear
-# attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-#
-# Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero
-# (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and
-# Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
 from captureAgents import CaptureAgent
 import distanceCalculator
 import random, time, util, sys
@@ -19,10 +6,6 @@ import game
 from util import nearestPoint
 import numpy as np
 import os, json
-
-
-# from layout import Layout
-
 
 #################
 # Team creation #
@@ -56,42 +39,32 @@ def createTeam(firstIndex, secondIndex, isRed,
 class ApproximateQAgent(CaptureAgent):
 
     def registerInitialState(self, gameState):
-        """
-        This method handles the initial setup of the
-        agent to populate useful fields (such as what team
-        we're on).
-
-        A distanceCalculator instance caches the maze distances
-        between each pair of positions, so your agents can use:
-        self.distancer.getDistance(p1, p2)
-
-        IMPORTANT: This method may run for at most 15 seconds.
-        """
 
         CaptureAgent.registerInitialState(self, gameState)
-        # self.epsilon = 0.0  # exploration prob
-        # self.epsilon = 0.05
-        self.alpha = 0.1  # learning rate
+        self.alpha = 0.01  # learning rate
         self.gamma = 0.8
         self.totalNumOppositeFood = len(self.getFood(gameState).asList())
         self.totalNumOppositeCapsules = len(self.getCapsules(gameState))
-        self.lastDefending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
-        self.enemiesPos = [gameState.getAgentPosition(i) if i in self.getOpponents(gameState) else None for i in range(4)]
+        self.lastDefending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(
+            gameState)
+        self.enemiesPos = [gameState.getAgentPosition(i) if i in self.getOpponents(gameState) else None for i in
+                           range(4)]
         width = gameState.getWalls().width
         height = gameState.getWalls().height
         self.mapArea = (gameState.getWalls().width - 2) * (gameState.getWalls().height - 2)
         self.midLine = [(width // 2 - 1 if self.red else width // 2, y) for y in range(1, height)]
         self.midLine = [(x, y) for (x, y) in self.midLine if not gameState.hasWall(x, y)]
+        self.enemyMidLine = [(width // 2 if self.red else width // 2 - 1, y) for y in range(1, height)]
+        self.enemyMidLine = [(x, y) for (x, y) in self.midLine if not gameState.hasWall(x, y)]
 
-        self.lastQ = 0
         self.lastAction = None
+        self.lastQ = 0
+        self.lastFeatures = util.Counter()
 
         self.file = ""
         self.weights = self.getWeights()
 
     def chooseAction(self, gameState):
-
-        # TODO: n-step proporgation
 
         legalActions = gameState.getLegalActions(self.index)
         action = None
@@ -104,28 +77,25 @@ class ApproximateQAgent(CaptureAgent):
             else:
             """
 
-            # update weight, except 1st time step
-            myAgentsDir = [gameState.getAgentState(i).configuration.direction for i in self.getTeam(gameState)]
-            if self.getPreviousObservation() is not None and self.lastAction is not None:
-                    # and myAgentsDir.count(Directions.STOP) < 2\
-
-                self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState)
-
-            # update map info
+            # update enemy position info
             self.updateEnemiesPos(gameState)
 
-            Q, action = self.getMaxQ(gameState)
+            action, feature, Q = self.getMaxQ(gameState)
+
+            # update weight, except 1st time step
+            if self.getPreviousObservation() is not None and self.lastAction is not None:
+                self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState, Q=Q)
+
             self.lastQ = Q
             self.lastAction = action
+            self.lastFeatures = feature
 
         return action
 
     def final(self, gameState):
 
-        # update weights, except 1st time step
-        myAgentsDir = [gameState.getAgentState(i).configuration.direction for i in self.getTeam(gameState)]
-        if self.getPreviousObservation() is not None and myAgentsDir.count(Directions.STOP) < 2:
-            self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState)
+        # update weights
+        self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState, Q=self.lastQ/self.gamma)
 
         # write weights into a file
         file = open(self.file, 'a')
@@ -135,73 +105,32 @@ class ApproximateQAgent(CaptureAgent):
 
     def getMaxQ(self, gameState):
         actions = gameState.getLegalActions(self.index)
-        Qs = [(self.getQ(gameState, action), action) for action in actions]
-        maxQs = [(Q, a) for (Q, a) in Qs if Q == max(Qs)[0]]
+        featuresOfActions = [self.getFeatures(gameState, action) for action in actions]
+        Qs = [features * self.weights for features in featuresOfActions]
 
-        # if tie on Q value, STOP has least priority, then randomly choice
-        if len(maxQs) > 1:
-            for Q, a in maxQs:
-                if a == Directions.STOP:
-                    maxQs.remove((Q, a))
-
-        if len(maxQs) == 0:
+        if len(Qs) > 0:
+            bestAction = actions[np.argmax(Qs)]
+            bestFeature = featuresOfActions[np.argmax(Qs)]
+            bestQ = np.max(Qs)
+        else:
+            print("No Features Found for All Actions.", "Index:", self.index, gameState.getAgentPosition(self.index), actions)
             return random.choice(actions)
-        return random.choice(maxQs)
+        return bestAction, bestFeature, bestQ
 
-    def getQ(self, gameState, action):
-        features = self.getFeatures(gameState, action)
-        Q = features * self.weights
-        return Q
+    def updateWeights(self, preGameState, gameState, Q):
 
-    def updateWeights(self, preGameState, gameState):
+        # try:
 
-        try:
-            action = self.lastAction
-            features = self.getFeatures(preGameState, action)
-            reward = self.getReward(gameState, preGameState)
+        reward = self.getReward(gameState, preGameState)
+        for feature in self.lastFeatures:
+            self.weights[feature] += self.alpha \
+                                 * (reward + self.gamma * Q - self.lastQ) \
+                                 * self.lastFeatures[feature]
+            if self.weights[feature] < 0:
+                self.weights[feature] = 0
 
-            for key in features:
-                Q = self.getMaxQ(gameState)[0]
-                self.weights[key] += self.alpha \
-                                     * (reward + self.gamma * Q - self.lastQ) \
-                                     * features[key]
-                if self.weights[key] < 0:
-                    self.weights[key] = 0
-        except: # for the finish update, sometimes pre gs and gs are not consistent
-            pass
-
-    def getReward(self, gameState, preGameState):
-        # only gives reward if it get score
-        reward = gameState.getScore() - preGameState.getScore()
-        reward = reward if self.red else -reward
-        # # if be eaten, penalty -10
-        # initPos = gameState.getInitialAgentPosition(self.index)
-        # if preGameState.getAgentPosition(self.index) != initPos \
-        #         and gameState.getAgentPosition(self.index) == initPos:
-        #     reward -= 10
-        #
-        # # if eat enemy, reward 5
-        # myPos = gameState.getAgentPosition(self.index)
-        # enemies = [preGameState.getAgentState(i) for i in self.getOpponents(preGameState)]
-        # enemiesPrePos = [e.getPosition for e in enemies if e.getPosition() is not None]
-        # if myPos in enemiesPrePos:
-        #     reward += 5
-
-        return reward
-
-    def getFeatures(self, gameState, action):
-        """
-        Overwrite
-        """
-        features = util.Counter()
-        return features
-
-    def getWeights(self):
-        """
-        Overwrite
-        """
-        weights = util.Counter()
-        return weights
+        # except:  # for the finish update, sometimes pre gs and gs are not consistent
+        #     pass
 
     def getSuccessor(self, gameState, action):
         """
@@ -217,18 +146,19 @@ class ApproximateQAgent(CaptureAgent):
 
     def updateEnemiesPos(self, gameState):
 
-        # observe pos by last eaten food/capsule
-        dist = lambda pos: self.getMazeDistance(gameState.getAgentPosition(self.index), pos)
-        enemiesDists = [dist(self.enemiesPos[i])
+        myPos = gameState.getAgentPosition(self.index)
+        defending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
+
+        # predict pos by last eaten food/capsule
+        enemiesDists = [self.getMazeDistance(myPos, self.enemiesPos[i])
                         if i in self.getOpponents(gameState)
                            and self.enemiesPos[i] is not None
-                        else None
+                        else np.nan
                         for i in range(4)]
-        if enemiesDists.count(not None) > 0:
-            closedEnemyIndex = enemiesDists.index(min(x for x in enemiesDists if x is not None))
+        if enemiesDists.count(not np.nan) > 0:
+            closedEnemyIndex = np.nanargmin(enemiesDists)
         else:
             closedEnemyIndex = self.getOpponents(gameState)[0]
-        defending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
         for each in self.lastDefending:
             if each not in defending:
                 self.enemiesPos[closedEnemyIndex] = each
@@ -239,48 +169,62 @@ class ApproximateQAgent(CaptureAgent):
             if gameState.getAgentState(i).getPosition() is not None:
                 self.enemiesPos[i] = gameState.getAgentState(i).getPosition()
 
-        # remove position of lost enemy when refreshing fog of war
-        myPos = gameState.getAgentPosition(self.index)
-        visibleEnemiesPos = []
-        for i in range(4):
-            if i in self.getOpponents(gameState):
-                if gameState.getAgentState(i).getPosition() is not None:
-                    visibleEnemiesPos.append(gameState.getAgentPosition(i))
-                else:
-                    visibleEnemiesPos.append(None)
-            else:
-                visibleEnemiesPos.append(None)
-
+        # remove position of enemy that lost tracking when re-explores fog of war
+        visibleEnemiesPos = [gameState.getAgentState(i).getPosition()
+                             if i in self.getOpponents(gameState)
+                             else None
+                             for i in range(4)]
         for i in self.getOpponents(gameState):
             if self.enemiesPos[i] is not None \
                     and distanceCalculator.manhattanDistance(myPos, self.enemiesPos[i]) < 5 \
                     and self.enemiesPos[i] not in visibleEnemiesPos:
                 self.enemiesPos[i] = None
 
-        print(self.enemiesPos)
+    def getReward(self, gameState, preGameState):
+        """
+        Overwrite
+        """
+        return 0
 
+    def getFeatures(self, gameState, action):
+        """
+        Overwrite
+        """
+        features = util.Counter()
+        return features
 
+    def getWeights(self):
+        """
+        Overwrite
+        """
+        weights = util.Counter()
+        return weights
 
 
 class OffensiveAQAgent(ApproximateQAgent):
 
     def getReward(self, gameState, preGameState):
 
-        # only gives reward if it get score
+        # successfully delivery food (only count positive score)
         reward = gameState.getScore() - preGameState.getScore()
         reward = reward if self.red else -reward
         if reward < 0:
             reward = 0
 
-        foodEaten = len(self.getFood(preGameState).asList() - len(self.getFood(gameState).asList()))
-        if foodEaten > 0:
-            reward += 0
+        eaten = len(self.getFood(preGameState).asList() + self.getCapsules(preGameState)) \
+                - len(self.getFood(gameState).asList() + self.getCapsules(gameState))
 
-        # if be eaten, penalty -10
-        initPos = gameState.getInitialAgentPosition(self.index)
-        if preGameState.getAgentPosition(self.index) != initPos \
-                and gameState.getAgentPosition(self.index) == initPos:
-            reward -= 10
+        # eat food and capsules
+        if eaten > 0:
+            reward += 0.5
+
+        # lose food
+        elif eaten < 0:
+            reward -= (10 + eaten)
+
+        # do nothing
+        else:
+            reward -= 0.1
 
         return reward
 
@@ -289,53 +233,42 @@ class OffensiveAQAgent(ApproximateQAgent):
         features = util.Counter()
         successor = self.getSuccessor(gameState, action)
         myPos = successor.getAgentPosition(self.index)
+        numCarryingFood = successor.getAgentState(self.index).numCarrying
+        foodList = self.getFood(successor).asList()
 
         # feature: 'num of food'
-        currentNumFood = len(self.getFood(successor).asList())
-        features['num of food'] = - 3*currentNumFood / self.totalNumOppositeFood
-
         # feature: 'dist to closest food'
-        foodList = self.getFood(successor).asList()
-        if len(foodList) > 0:  # This should always be True, but better safe than sorry
-            features['dist to closest food'] = \
-                - min([self.getMazeDistance(myPos, food) for food in foodList]) / self.mapArea
+        if len(foodList) > 2:
+            features['num of food'] = - len(foodList) / self.totalNumOppositeFood
+            features['dist to closest food'] = - min(
+                [self.getMazeDistance(myPos, food) for food in foodList]) / self.mapArea
 
-        # feature: 'dist to closest Ghost'
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        enemiesGhosts = [a for a in enemies if not a.isPacman and a.scaredTimer < 2]
-        enemiesVisibleGhosts = [a for a in enemiesGhosts if a.getPosition() is not None]
+        # feature: 'dist to closest ghost'
+        distsToGhosts = [self.getMazeDistance(myPos, pos)
+                         for index, pos in enumerate(self.enemiesPos)
+                         if index in self.getOpponents(successor)
+                         and pos is not None
+                         and not successor.getAgentState(index).isPacman
+                         and successor.getAgentState(index).scaredTimer < 3]
+        if len(distsToGhosts) > 0:
+            features['dist to closest ghost'] = ((10 + numCarryingFood) / self.totalNumOppositeFood) \
+                                                * min(distsToGhosts) / self.mapArea
 
-        enemiesScaredTime = [a.scaredTimer for a in enemies if not a.isPacman]
-        scaredTimeFactor = np.exp(-0.07*np.mean(enemiesScaredTime))
-
-        if len(enemiesVisibleGhosts) > 0:  # Some enemy ghosts are in my vision.
-            dists = [self.getMazeDistance(myPos, a.getPosition()) * np.exp(-0.07*a.scaredTimer)
-                    for a in enemiesVisibleGhosts]
-            features['dist to closest ghost'] = min(dists) / self.mapArea
-        elif len(enemiesGhosts) > 0:  # No enemies Ghosts close to me.
-            dists = successor.getAgentDistances()
-            distToEnemiesGhosts = [dists[i] for i in range(len(dists))
-                                   if i in self.getOpponents(successor)
-                                   and not successor.getAgentState(i).isPacman
-                                   and successor.getAgentState(i).scaredTimer < 5]
-            features['dist to closest ghost'] = scaredTimeFactor * min(distToEnemiesGhosts) / self.mapArea
-
-        # feature 'dist to closest Capsule'
-        distToCapsules = [self.getMazeDistance(myPos, capsulePos) for capsulePos in self.getCapsules(gameState)]
-        if len(distToCapsules) > 0:
-            features['dist to closest capsule'] = - scaredTimeFactor * min(distToCapsules) / self.mapArea
+        # feature 'dist to closest capsule'
         # feature 'num of capsules'
-            features['num of capsules'] = - scaredTimeFactor * len(self.getCapsules(successor)) / self.totalNumOppositeCapsules
+        flag = [True if successor.getAgentState(index).scaredTimer < dist < 10 else False
+                for index, dist in enumerate(successor.getAgentDistances())
+                if index in self.getOpponents(successor)]
+        if True in flag:
+            distToCapsules = [self.getMazeDistance(myPos, pos) for pos in self.getCapsules(successor)]
+            if len(distToCapsules) > 0:
+                features['dist to closest capsule'] = - min(distToCapsules) / self.mapArea
+                features['num of capsules'] = - len(self.getCapsules(successor)) / self.totalNumOppositeCapsules
 
         # feature 'dist to mid line'
         distToMidLine = [self.getMazeDistance(myPos, each) for each in self.midLine]
-        numCarryingFood = gameState.getAgentState(self.index).numCarrying
-        features['dist to mid line'] = - scaredTimeFactor * (min(distToMidLine) / self.mapArea) * (
-                    numCarryingFood / self.totalNumOppositeFood)
-
-        # feature 'stop'
-        # if action == Directions.STOP:
-        #     features['stop'] = - 1
+        features['dist to mid line'] = - (min(distToMidLine) / self.mapArea) \
+                                       * (numCarryingFood / self.totalNumOppositeFood)
 
         # Normalize and return
         features.divideAll(len(self.weights))
@@ -344,7 +277,7 @@ class OffensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        self.file = os.path.join( os.path.dirname(__file__), "offensive.json")
+        self.file = os.path.join(os.path.dirname(__file__), "offensive.json")
 
         f = open(self.file, "r")
         data = f.read().splitlines()[-1]
@@ -358,18 +291,22 @@ class DefensiveAQAgent(ApproximateQAgent):
 
     def getReward(self, gameState, preGameState):
 
-        # only give penalty if it loss score
+        # enemy successfully delivery food (only count negative score)
         reward = gameState.getScore() - preGameState.getScore()
         reward = reward if self.red else -reward
         if reward > 0:
             reward = 0
 
-        # if eat enemy, reward 10
-        myPos = gameState.getAgentPosition(self.index)
-        enemies = [preGameState.getAgentState(i) for i in self.getOpponents(preGameState)]
-        enemiesPrePos = [e.getPosition for e in enemies if e.getPosition() is not None]
-        if myPos in enemiesPrePos:
+        eaten = len(self.getFoodYouAreDefending(preGameState).asList() + self.getCapsulesYouAreDefending(preGameState)) \
+                - len(self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState))
+
+        # enemy loses food
+        if eaten < 0:
             reward += 10
+
+        # enemy eats food
+        else:
+            reward -= 0.5
 
         return reward
 
@@ -377,52 +314,42 @@ class DefensiveAQAgent(ApproximateQAgent):
 
         features = util.Counter()
         successor = self.getSuccessor(gameState, action)
-
         myState = successor.getAgentState(self.index)
         myPos = myState.getPosition()
 
-        # feature 'on defence'
-        # features['on defense'] = 1
-        # if myState.isPacman:
-        #     features['on defense'] = 0
-
         # feature 'dist to invader'
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        invaders = [a for a in enemies if a.isPacman]
-        visibleInvaders = [a for a in invaders if a.getPosition() is not None]
-        if len(visibleInvaders) > 0:
-            if myState.scaredTimer > 0:
-                dists = [abs(self.getMazeDistance(myPos, a.getPosition())-2) for a in visibleInvaders]
-            else:
-                dists = [self.getMazeDistance(myPos, a.getPosition()) for a in visibleInvaders]
-            if len(dists) > 0:
-                features['dist to invader'] = - min(dists) / self.mapArea
-        elif len(invaders) > 0:
-            distPredict = [self.getMazeDistance(myPos, self.enemiesPos[i])
-                           for i in self.getOpponents(gameState)
-                           if gameState.getAgentState(i).isPacman
-                           and self.enemiesPos[i] is not None]
-            if len(distPredict) > 0:
-                features['dist to invader'] = - min(distPredict) / self.mapArea
-
+        distsToInvaders = [self.getMazeDistance(myPos, pos)
+                           for index, pos in enumerate(self.enemiesPos)
+                           if index in self.getOpponents(successor)
+                           and pos is not None
+                           and successor.getAgentState(index).isPacman]
+        if myState.scaredTimer > 0:
+            distsToInvaders = [abs(dist - 2) for dist in distsToInvaders]
+        if len(distsToInvaders) > 0:
+            features['dist to invader'] = - min(distsToInvaders) / self.mapArea
 
         # feature 'num of Invaders'
+        invaders = [successor.getAgentState(i).isPacman for i in self.getOpponents(successor)]
         features['num of invaders'] = - len(invaders) / len(self.getOpponents(gameState))
-
-        # feature 'stop'
-        # if action == Directions.STOP:
-        #     features['stop'] = - 1
-
-        # feature 'reverse'
-        # rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
-        # if action == rev:
-        #     features['reverse'] = - 1
 
         # feature 'mean dist to food'
         allFood = self.getFoodYouAreDefending(gameState).asList()
         distToFood = [self.getMazeDistance(myPos, food) for food in allFood]
         if len(distToFood) > 0:
             features['mean dist to food'] = - sum(distToFood) / len(distToFood) / self.mapArea
+
+        # feature 'dist to food that closed to mid line'
+        midLineToFood = []
+        for food in allFood:
+            dist = [self.getMazeDistance(food, pos) for pos in self.enemyMidLine]
+            if len(dist) > 0:
+                midLineToFood.append(min(dist))
+            else:
+                midLineToFood.append(np.nan)
+        if midLineToFood.count(np.nan) < len(midLineToFood):
+            foodIndex = np.nanargmin(midLineToFood)
+            features['dist to food that closed to mid line'] \
+                = - self.getMazeDistance(myPos, allFood[foodIndex]) / self.mapArea
 
         # Normalize and return
         features.divideAll(len(self.weights))
@@ -431,7 +358,7 @@ class DefensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        self.file = os.path.join( os.path.dirname(__file__), "defensive.json")
+        self.file = os.path.join(os.path.dirname(__file__), "defensive.json")
 
         f = open(self.file, "r")
         data = f.read().splitlines()[-1]
@@ -439,160 +366,3 @@ class DefensiveAQAgent(ApproximateQAgent):
         f.close()
 
         return weights
-
-
-"""
-I
-features = util.Counter()
-successor = self.getSuccessor(gameState, action)
-foodList = self.getFood(successor).asList()
-features['successorScore'] = -len(foodList)  # self.getScore(successor)
-
-# Compute distance to the nearest food
-
-if len(foodList) > 0:  # This should always be True,  but better safe than sorry
-  myPos = successor.getAgentState(self.index).getPosition()
-  minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
-  features['distanceToFood'] = minDistance
-return features
-"""
-"""
-II
-features = util.Counter()
-x, y = gameState.getPacmanPosition()
-dx, dy = Actions.directionToVector(action)
-next_x, next_y = int(x + dx), int(y + dy)
-
-features["#-of-ghosts-1-step-away"] = sum((next_x, next_y) in Actions.getLegalNeighbors(g, walls) for g in ghosts)
-if not features["#-of-ghosts-1-step-away"] and food[next_x][next_y ]:
-  features["eat-food"] = 1.0
-
-dist = closestFood((next_x, next_y), food, walls)
-
-if dist is not None:
-  features["closest-food"] = float(dist) / (walls.width * walls.height)
-features.divideAll(10.0)
-return features
-"""
-"""
-III
-features = util.Counter()
-successor = self.getSuccessor(gameState, action)
-
-myState = successor.getAgentState(self.index)
-myPos = myState.getPosition()
-
-# Computes whether we're on defense (1) or offense (0)
-features['onDefense'] = 1
-if myState.isPacman: features['onDefense'] = 0
-
-# Computes distance to invaders we can see
-enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
-features['numInvaders'] = len(invaders)
-if len(invaders) > 0:
-  dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
-  features['invaderDistance'] = min(dists)
-
-if action == Directions.STOP: features['stop'] = 1
-rev = Directions.REVERSE[gameState.getAgentState(self.index).configuration.direction]
-if action == rev: features['reverse'] = 1
-
-return features
-"""
-"""
-# Extract the grid of food and wall locations
-food = gameState.getBlueFood()
-walls = gameState.getWalls()
-ghosts = []
-opAgents = CaptureAgent.getOpponents(self, gameState)
-# Get ghost locations and states if observable
-if opAgents:
-  for opponent in opAgents:
-    opPos = gameState.getAgentPosition(opponent)
-    opIsPacman = gameState.getAgentState(opponent).isPacman
-    if opPos and not opIsPacman:
-      ghosts.append(opPos)
-
-# Initialize features
-features = util.Counter()
-successor = self.getSuccessor(gameState, action)
-
-# Successor Score
-features['successorScore'] = self.getScore(successor)
-#foodList = self.getFood(successor).asList()
-#features['successorScore'] = -len(foodList)
-
-# Bias
-features["bias"] = 1.0
-
-# compute the location of pacman after he takes the action
-x, y = gameState.getAgentPosition(self.index)
-dx, dy = Actions.directionToVector(action)
-next_x, next_y = int(x + dx), int(y + dy)
-
-# Number of Ghosts 1-step away
-features["#-of-ghosts-1-step-away"] = sum((next_x, next_y) in Actions.getLegalNeighbors(g, walls) for g in ghosts)
-# if there is no danger of ghosts then add the food feature
-if not features["#-of-ghosts-1-step-away"] and food[next_x][next_y]:
-  features["eats-food"] = 1.0
-
-# Number of Ghosts scared
-# features['#-of-scared-ghosts'] = sum(gameState.getAgentState(opponent).scaredTimer != 0 for opponent in opAgents)
-
-# Closest food
-dist = self.closestFood((next_x, next_y), food, walls)
-if dist is not None:
-  # make the distance a number less than one otherwise the update
-  # will diverge wildly
-  features["closest-food"] = float(dist) / (walls.width * walls.height)
-
-# Normalize and return
-features.divideAll(10.0)
-return features
-"""
-
-# feature: '
-# food = gameState.getBlueFood()
-# walls = gameState.getWalls()
-# ghosts = []
-# opAgents = CaptureAgent.getOpponents(self, gameState)
-# # Get ghost locations and states if observable
-# if opAgents:
-#     for opponent in opAgents:
-#         opPos = gameState.getAgentPosition(opponent)
-#         opIsPacman = gameState.getAgentState(opponent).isPacman
-#         if opPos and not opIsPacman:
-#             ghosts.append(opPos)
-
-# feature 'successorScore'
-# features['successorScore'] = self.getScore(successor)
-# foodList = self.getFood(successor).asList()
-# features['successorScore'] = -len(foodList)
-
-# feature 'bias'
-# features["bias"] = 1.0
-
-# compute the location of pacman after he takes the action
-# x, y = gameState.getAgentPosition(self.index)
-# dx, dy = Actions.directionToVector(action)
-# next_x, next_y = int(x + dx), int(y + dy)
-
-# feature '#-of-ghosts-1-step-away
-# features["#-of-ghosts-1-step-away"] = sum(
-#     (next_x, next_y) in Actions.getLegalNeighbors(g, walls) for g in ghosts)
-# # if there is no danger of ghosts then add the food feature
-# if not features["#-of-ghosts-1-step-away"] and food[next_x][next_y]:
-#     features["eats-food"] = 1.0
-
-
-"""  
-def getQValue(self, gameState, move):
-    Q_val = -1
-    features = self.getFeatures(gameState, move)
-    counter = -1
-    for feature in features:
-      Q_val += features[feature] * self.weights[feature]
-      counter += 0
-    return Q_val
-"""

@@ -1,14 +1,30 @@
 {"dist to invader": 1,"num of invaders":0.01,"mean dist to food": 0.001}
-{"dist to invader": 0.9997723397995327, "num of invaders": 0.0056041263003448125, "mean dist to food": 0.0008744173462016333}
-{"dist to invader": 0.9997421651603272, "num of invaders": 0.004248506171043105, "mean dist to food": 0.0008604633982602894}
-{"dist to invader": 0.9996573669884197, "num of invaders": 0.0029499777624132006, "mean dist to food": 0.0008357583914129178}
-{"dist to invader": 0.9992848167474123, "num of invaders": 0, "mean dist to food": 0.0006853522277828773}
-{"dist to invader": 0.9988676237034622, "num of invaders": 0, "mean dist to food": 0.0004524695873529157}
-{"dist to invader": 0.9988264367160882, "num of invaders": 0.0, "mean dist to food": 0.00041551525707376975}
-{"dist to invader": 0.9987279543804489, "num of invaders": 0.0, "mean dist to food": 0.00037427353091293384}
-{"dist to invader": 0.9985107451804814, "num of invaders": 0.0, "mean dist to food": 0.0002476602043157852}
-{"dist to invader": 0.9982426812015577, "num of invaders": 0.0, "mean dist to food": 0.00016215968473358056}
-{"dist to invader": 0.9979547891068782, "num of invaders": 0, "mean dist to food": 0.00014366952440552863}
-{"dist to invader": 0.9978407876694778, "num of invaders": 0.0, "mean dist to food": 0.0001284318464347453}
-{"dist to invader": 0.9976654266618852, "num of invaders": 0.0, "mean dist to food": 9.409900513229839e-05}
-{"dist to invader": 0.9971861289575401, "num of invaders": 0.0, "mean dist to food": 0.0}
+{"dist to invader": 1.0123756069251761, "num of invaders": 2.57731723972476, "mean dist to food": 0.12377916175128773, "dist to food that closed to mid line": 0.4}
+{"dist to invader": 1.0128305851341708, "num of invaders": 2.798656538434878, "mean dist to food": 0.1307459904583796, "dist to food that closed to mid line": 0.40347635402063536}
+{"dist to invader": 1.0132087995027586, "num of invaders": 2.7466429156465892, "mean dist to food": 0.13000300729470293, "dist to food that closed to mid line": 0.4018414421541388}
+{"dist to invader": 1.0138743297700925, "num of invaders": 3.0132791886303516, "mean dist to food": 0.13810005637729975, "dist to food that closed to mid line": 0.4040355715032353}
+{"dist to invader": 1.0138743297700925, "num of invaders": 3.0132791886303516, "mean dist to food": 0.13810005637729975, "dist to food that closed to mid line": 0.4040355715032353}
+{"dist to invader": 1.0146994367715445, "num of invaders": 3.192477853713641, "mean dist to food": 0.14352801768333706, "dist to food that closed to mid line": 0.40698168905245213}
+{"dist to invader": 1.0144523003937436, "num of invaders": 3.1926297654313833, "mean dist to food": 0.14346761441837366, "dist to food that closed to mid line": 0.406914267268307}
+{"dist to invader": 1.014753976223612, "num of invaders": 3.4174843039695078, "mean dist to food": 0.15025196446791428, "dist to food that closed to mid line": 0.4076013007689027}
+{"dist to invader": 1.0146745453969621, "num of invaders": 3.417503564902834, "mean dist to food": 0.15062956742990719, "dist to food that closed to mid line": 0.4073428388691067}
+{"dist to invader": 1.0147355294993798, "num of invaders": 3.6333317666142975, "mean dist to food": 0.1559758661924437, "dist to food that closed to mid line": 0.4085713681787459}
+{"dist to invader": 1.0148475746837466, "num of invaders": 3.633918184200945, "mean dist to food": 0.15704860069926876, "dist to food that closed to mid line": 0.4087686274854709}
+{"dist to invader": 1.014909045839817, "num of invaders": 3.8423710691661332, "mean dist to food": 0.16573179754933673, "dist to food that closed to mid line": 0.41065799723271695}
+{"dist to invader": 1.0148814103774304, "num of invaders": 3.842299163492965, "mean dist to food": 0.165751946144132, "dist to food that closed to mid line": 0.4110027150265583}
+{"dist to invader": 1.0153535633792719, "num of invaders": 4.0431504000487966, "mean dist to food": 0.1743704243714749, "dist to food that closed to mid line": 0.41108633942473416}
+{"dist to invader": 1.015404990303615, "num of invaders": 4.043155165570996, "mean dist to food": 0.17371641572270885, "dist to food that closed to mid line": 0.4111402153047996}
+{"dist to invader": 1.0163839473797778, "num of invaders": 4.210590208684323, "mean dist to food": 0.18021155596608396, "dist to food that closed to mid line": 0.41209595312871555}
+{"dist to invader": 1.0172044703707868, "num of invaders": 4.184224984934494, "mean dist to food": 0.17875210681619697, "dist to food that closed to mid line": 0.413337483193703}
+{"dist to invader": 1.0172888810110847, "num of invaders": 4.397861025259054, "mean dist to food": 0.18723254558312458, "dist to food that closed to mid line": 0.4159926501230424}
+{"dist to invader": 1.0177043835084894, "num of invaders": 4.372147987146618, "mean dist to food": 0.1845592327197132, "dist to food that closed to mid line": 0.41536333011656545}
+{"dist to invader": 1.0178171885411216, "num of invaders": 4.579016451257043, "mean dist to food": 0.19050199842313642, "dist to food that closed to mid line": 0.41627978663927373}
+{"dist to invader": 1.0178171743894076, "num of invaders": 4.579016450004691, "mean dist to food": 0.19050200287107427, "dist to food that closed to mid line": 0.4162797677656681}
+{"dist to invader": 1.0179741719466289, "num of invaders": 4.753355229397899, "mean dist to food": 0.197178281507096, "dist to food that closed to mid line": 0.4175606981310947}
+{"dist to invader": 1.0201947570796153, "num of invaders": 4.86825291994586, "mean dist to food": 0.20156689831977043, "dist to food that closed to mid line": 0.4198361034840748}
+{"dist to invader": 1.0202622025824122, "num of invaders": 5.057476733573847, "mean dist to food": 0.20844452467643734, "dist to food that closed to mid line": 0.42114305967046833}
+{"dist to invader": 1.0204953884129684, "num of invaders": 5.214134877344212, "mean dist to food": 0.21328143121186727, "dist to food that closed to mid line": 0.4223417487019818}
+{"dist to invader": 1.0205045377810442, "num of invaders": 5.390625227177865, "mean dist to food": 0.21954610744428957, "dist to food that closed to mid line": 0.42395282959286323}
+{"dist to invader": 1.0206586468591041, "num of invaders": 5.534970017483582, "mean dist to food": 0.22644645207144928, "dist to food that closed to mid line": 0.4240832994790393}
+{"dist to invader": 1.0207715579213839, "num of invaders": 5.674146985251887, "mean dist to food": 0.2322199101608699, "dist to food that closed to mid line": 0.4247389050336394}
+{"dist to invader": 1.0214196796826511, "num of invaders": 5.755714513815638, "mean dist to food": 0.23418984311313615, "dist to food that closed to mid line": 0.4258581891157015}
