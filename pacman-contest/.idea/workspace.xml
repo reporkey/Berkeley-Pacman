@@ -5,8 +5,11 @@
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/pacman-contest.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pacman-contest.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/baselineTeam.py" beforeDir="false" afterPath="$PROJECT_DIR$/baselineTeam.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/baselineTeam2.py" beforeDir="false" />
+=======
+>>>>>>> ValueIteration
       <change beforePath="$PROJECT_DIR$/myTeam.py" beforeDir="false" afterPath="$PROJECT_DIR$/myTeam.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,6 +18,7 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
   <component name="FileEditorManager">
@@ -37,6 +41,8 @@
     </leaf>
   </component>
 >>>>>>> ValueIteration
+=======
+>>>>>>> ValueIteration
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -44,6 +50,7 @@
       </list>
     </option>
   </component>
+<<<<<<< HEAD
 <<<<<<< HEAD
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -96,6 +103,15 @@
     <option name="height" value="988" />
   </component>
   <component name="PropertiesComponent">
+=======
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="1SBfZsBTPhokT8JBeDa9j7F6FaU" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+>>>>>>> ValueIteration
     <property name="last_opened_file_path" value="$PROJECT_DIR$/capture.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -118,6 +134,7 @@
 =======
   <component name="RunManager" selected="Python.myTeam">
     <configuration name="a" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pacman-contest" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -128,13 +145,18 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="pacman-contest" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/a.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
     </configuration>
     <configuration name="baselineTeam2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pacman-contest" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -145,13 +167,18 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="pacman-contest" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/baselineTeam2.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
     </configuration>
     <configuration name="czr112" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pacman-contest" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -162,13 +189,21 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="pacman-contest" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/czr112.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
     </configuration>
     <configuration name="myTeam" type="PythonConfigurationType" factoryName="Python" temporary="true">
+<<<<<<< HEAD
+>>>>>>> ValueIteration
+=======
+      <module name="pacman-contest" />
 >>>>>>> ValueIteration
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -181,6 +216,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
 <<<<<<< HEAD
+<<<<<<< HEAD
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/capture.py" />
       <option name="PARAMETERS" value="--delay 0.1 -b myTeam.py" />
@@ -188,6 +224,11 @@
       <module name="pacman-contest" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/myTeam.py" />
       <option name="PARAMETERS" value="" />
+>>>>>>> ValueIteration
+=======
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/capture.py" />
+      <option name="PARAMETERS" value="-b myTeam.py" />
 >>>>>>> ValueIteration
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -199,6 +240,7 @@
 <<<<<<< HEAD
 =======
     <configuration name="myTeam4" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pacman-contest" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -209,26 +251,30 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="pacman-contest" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/myTeam4.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
     </configuration>
-    <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.myTeam4" />
-      <item index="1" class="java.lang.String" itemvalue="Python.czr112" />
-      <item index="2" class="java.lang.String" itemvalue="Python.baselineTeam2" />
-      <item index="3" class="java.lang.String" itemvalue="Python.a" />
-      <item index="4" class="java.lang.String" itemvalue="Python.myTeam" />
+    <list>
+      <item itemvalue="Python.myTeam4" />
+      <item itemvalue="Python.czr112" />
+      <item itemvalue="Python.baselineTeam2" />
+      <item itemvalue="Python.a" />
+      <item itemvalue="Python.myTeam" />
     </list>
     <recent_temporary>
-      <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.myTeam" />
-        <item index="1" class="java.lang.String" itemvalue="Python.a" />
-        <item index="2" class="java.lang.String" itemvalue="Python.myTeam4" />
-        <item index="3" class="java.lang.String" itemvalue="Python.czr112" />
-        <item index="4" class="java.lang.String" itemvalue="Python.baselineTeam2" />
+      <list>
+        <item itemvalue="Python.myTeam" />
+        <item itemvalue="Python.a" />
+        <item itemvalue="Python.myTeam4" />
+        <item itemvalue="Python.czr112" />
+        <item itemvalue="Python.baselineTeam2" />
       </list>
     </recent_temporary>
 >>>>>>> ValueIteration
@@ -253,9 +299,11 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1569294624276</updated>
+      <workItem from="1571041969949" duration="3588000" />
     </task>
     <servers />
   </component>
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
   <component name="ToolWindowManager">
@@ -300,9 +348,21 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
+=======
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+>>>>>>> ValueIteration
   </component>
-  <component name="VcsContentAnnotationSettings">
-    <option name="myLimit" value="2678400000" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 >>>>>>> ValueIteration
   <component name="XDebuggerManager">
@@ -335,12 +395,8 @@
           <line>93</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/myTeam.py</url>
-          <line>101</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
       </breakpoints>
+<<<<<<< HEAD
       <option name="time" value="12" />
 >>>>>>> ValueIteration
     </breakpoint-manager>
@@ -642,6 +698,12 @@
         </state>
       </provider>
     </entry>
+>>>>>>> ValueIteration
+=======
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/pacman_contest$myTeam.coverage" NAME="myTeam Coverage Results" MODIFIED="1571045090828" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
 >>>>>>> ValueIteration
   </component>
 </project>
