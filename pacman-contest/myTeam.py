@@ -398,8 +398,8 @@ class DefensiveAQAgent(ApproximateQAgent):
 
         # self.file = os.path.join(os.path.dirname(__file__), "defensive.json")
 
-        # sys.path.append('teams/Pacman_Go/')
-        # self.file = "./defensive.json"
+        sys.path.append('teams/Pacman_Go/')
+        self.file = "./defensive.json"
 
         f = open(self.file, "r")
         data = f.read().splitlines()[-1]
