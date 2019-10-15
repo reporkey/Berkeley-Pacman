@@ -32,11 +32,11 @@ def createTeam(firstIndex, secondIndex, isRed,
     return [eval(first)(firstIndex), eval(second)(secondIndex)]
 
 
-ALPHA = 0.05  # learning rate
+ALPHA = 0.03  # learning rate
 GAMMA = 1  # discounted rate
-C_P = 0.3  # UCT
+C_P = 1.0  # UCT
 EPSILON = 0.1  # e-greedy
-TIME_LIMIT = 0.7
+TIME_LIMIT = 0.2
 
 
 ##########
@@ -140,20 +140,20 @@ class MonteCarloAgent(CaptureAgent):
         action = None
         actions = node.state.getLegalActions(node.index)
 
-        while (len(node.children) > 0 or len(actions) > 0) and not node.state.isOver():
+        # while (len(node.children) > 0 or len(actions) > 0) and not node.state.isOver():
+        #
+        #     # choose action
+        #     existedActions = set([each.action for each in node.children])
+        #     actions = list(set(actions) - existedActions)
+        #     if len(actions) > 0:
+        #         action = np.random.choice(actions)
+        #         break
 
-            # choose action
-            existedActions = set([each.action for each in node.children])
-            actions = list(set(actions) - existedActions)
-            if len(actions) > 0:
-                action = np.random.choice(actions)
-                break
-
-            """ UCB1 (UCT) """
-            """ Since the Q is not normalized between attacker and defender, UCT is not a good choice """
-            UCB1 = np.array([child.V + 2 * C_P * np.sqrt(2 * np.log(node.N) / child.N) for child in node.children])
-            node = node.children[np.random.choice(np.flatnonzero(UCB1 == UCB1.max()))]
-            actions = node.state.getLegalActions(node.index)
+            # """ UCB1 (UCT) """
+            # """ Since the Q is not normalized between attacker and defender, UCT is not a good choice """
+            # UCB1 = np.array([child.V + 2 * C_P * np.sqrt(2 * np.log(node.N) / child.N) for child in node.children])
+            # node = node.children[np.random.choice(np.flatnonzero(UCB1 == UCB1.max()))]
+            # actions = node.state.getLegalActions(node.index)
 
         while action is None:
             """ backup """
@@ -302,7 +302,7 @@ class OffensiveReflexAgent(MonteCarloAgent):
     def getReward(self, gameState, preGameState):
 
         # successfully delivery food (only count positive score)
-        reward = 2 * (gameState.getScore() - preGameState.getScore())
+        reward = 3 * (gameState.getScore() - preGameState.getScore())
         reward = reward if self.red else -reward
         if reward < 0:
             reward = 0
