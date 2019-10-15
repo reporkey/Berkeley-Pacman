@@ -36,13 +36,15 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
+ALPHA = 0.01  # learning rate
+GAMMA = 0.8
+NSTEP = 3
+
 class ApproximateQAgent(CaptureAgent):
 
     def registerInitialState(self, gameState):
 
         CaptureAgent.registerInitialState(self, gameState)
-        self.alpha = 0.01  # learning rate
-        self.gamma = 0.8
         self.totalNumOppositeFood = len(self.getFood(gameState).asList())
         self.totalNumOppositeCapsules = len(self.getCapsules(gameState))
         self.lastDefending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(
@@ -80,7 +82,9 @@ class ApproximateQAgent(CaptureAgent):
             # update enemy position info
             self.updateEnemiesPos(gameState)
 
-            action, feature, Q = self.getMaxQ(gameState)
+            start = time.time()
+            action, Q = self.getMaxQ(gameState, step=NSTEP)
+            feature = self.getFeatures(gameState, action)
 
             # update weight, except 1st time step
             if self.getPreviousObservation() is not None and self.lastAction is not None:
@@ -95,7 +99,7 @@ class ApproximateQAgent(CaptureAgent):
     def final(self, gameState):
 
         # update weights
-        self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState, Q=self.lastQ/self.gamma)
+        self.updateWeights(preGameState=self.getPreviousObservation(), gameState=gameState, Q=self.lastQ/GAMMA)
 
         # write weights into a file
         file = open(self.file, 'a')
@@ -103,19 +107,27 @@ class ApproximateQAgent(CaptureAgent):
         file.write(data + '\n')
         file.close()
 
-    def getMaxQ(self, gameState):
-        actions = gameState.getLegalActions(self.index)
-        featuresOfActions = [self.getFeatures(gameState, action) for action in actions]
-        Qs = [features * self.weights for features in featuresOfActions]
+    def getMaxQ(self, gameState, step):
 
-        if len(Qs) > 0:
+        actions = gameState.getLegalActions(self.index)
+        Qs = []
+        for action in actions:
+            if step > 1:
+                successor = self.getSuccessor(gameState, action)
+                a, q = self.getMaxQ(successor, step-1)
+                Q = self.getFeatures(gameState, action) * self.weights
+                Qs.append(Q + GAMMA * (q - Q))
+            else:
+                Qs.append(self.getFeatures(gameState, action) * self.weights)
+
+        if len(Qs) > 1:
             bestAction = actions[np.argmax(Qs)]
-            bestFeature = featuresOfActions[np.argmax(Qs)]
             bestQ = np.max(Qs)
         else:
             print("No Features Found for All Actions.", "Index:", self.index, gameState.getAgentPosition(self.index), actions)
-            return random.choice(actions)
-        return bestAction, bestFeature, bestQ
+            return random.choice(actions), None
+
+        return bestAction, bestQ
 
     def updateWeights(self, preGameState, gameState, Q):
 
@@ -123,8 +135,8 @@ class ApproximateQAgent(CaptureAgent):
 
         reward = self.getReward(gameState, preGameState)
         for feature in self.lastFeatures:
-            self.weights[feature] += self.alpha \
-                                 * (reward + self.gamma * Q - self.lastQ) \
+            self.weights[feature] += ALPHA \
+                                 * (reward + GAMMA * Q - self.lastQ) \
                                  * self.lastFeatures[feature]
             if self.weights[feature] < 0:
                 self.weights[feature] = 0
@@ -206,25 +218,35 @@ class OffensiveAQAgent(ApproximateQAgent):
     def getReward(self, gameState, preGameState):
 
         # successfully delivery food (only count positive score)
-        reward = gameState.getScore() - preGameState.getScore()
+        reward = 3 * (gameState.getScore() - preGameState.getScore())
         reward = reward if self.red else -reward
         if reward < 0:
             reward = 0
 
-        eaten = len(self.getFood(preGameState).asList() + self.getCapsules(preGameState)) \
-                - len(self.getFood(gameState).asList() + self.getCapsules(gameState))
+        foodChange = len(self.getFood(preGameState).asList()) - len(self.getFood(gameState).asList())
+        capsuleChange = len(self.getCapsules(preGameState)) - len(self.getCapsules(gameState))
 
-        # eat food and capsules
-        if eaten > 0:
-            reward += 0.5
+        # eat food
+        if foodChange > 0:
+            reward += 0.3
 
         # lose food
-        elif eaten < 0:
-            reward -= (10 + eaten)
+        if foodChange < 0:
+            reward -= foodChange
+
+        # eat Capsule
+        if capsuleChange > 0:
+            reward += 0.5
 
         # do nothing
-        else:
-            reward -= 0.1
+        if capsuleChange == 0 and foodChange == 0:
+            reward -= 0.05
+
+        # be eaten
+        initPos = gameState.getInitialAgentPosition(self.index)
+        if preGameState.getAgentPosition(self.index) != initPos \
+                and gameState.getAgentPosition(self.index) == initPos:
+            reward -= 5
 
         return reward
 
@@ -277,7 +299,10 @@ class OffensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        self.file = os.path.join(os.path.dirname(__file__), "offensive.json")
+        # self.file = os.path.join(os.path.dirname(__file__), "offensive.json")
+
+        sys.path.append('teams/Pacman_Go/')
+        self.file = "./offensive.json"
 
         f = open(self.file, "r")
         data = f.read().splitlines()[-1]
@@ -297,16 +322,29 @@ class DefensiveAQAgent(ApproximateQAgent):
         if reward > 0:
             reward = 0
 
-        eaten = len(self.getFoodYouAreDefending(preGameState).asList() + self.getCapsulesYouAreDefending(preGameState)) \
-                - len(self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState))
-
-        # enemy loses food
-        if eaten < 0:
-            reward += 10
+        foodChange = len(self.getFoodYouAreDefending(gameState).asList()) - len(
+            self.getFoodYouAreDefending(preGameState).asList())
+        capsuleChange = len(self.getCapsulesYouAreDefending(gameState)) - len(
+            self.getCapsulesYouAreDefending(preGameState))
 
         # enemy eats food
-        else:
-            reward -= 0.5
+        if foodChange < 0:
+            reward -= 1
+
+        # enemy loses food
+        if foodChange > 0:
+            reward += foodChange
+
+        # enemy eats Capsule
+        if capsuleChange < 0:
+            reward -= 2
+
+        # eat enemy
+        myPos = gameState.getAgentPosition(self.index)
+        enemies = [preGameState.getAgentState(i) for i in self.getOpponents(preGameState)]
+        enemiesPrePos = [e.getPosition for e in enemies if e.getPosition() is not None]
+        if myPos in enemiesPrePos:
+            reward += 5
 
         return reward
 
@@ -358,7 +396,10 @@ class DefensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        self.file = os.path.join(os.path.dirname(__file__), "defensive.json")
+        # self.file = os.path.join(os.path.dirname(__file__), "defensive.json")
+
+        # sys.path.append('teams/Pacman_Go/')
+        # self.file = "./defensive.json"
 
         f = open(self.file, "r")
         data = f.read().splitlines()[-1]
