@@ -38,7 +38,7 @@ def createTeam(firstIndex, secondIndex, isRed,
 
 ALPHA = 0.01  # learning rate
 GAMMA = 0.8
-NSTEP = 3
+NSTEP = 4
 
 class ApproximateQAgent(CaptureAgent):
 
@@ -218,7 +218,7 @@ class OffensiveAQAgent(ApproximateQAgent):
     def getReward(self, gameState, preGameState):
 
         # successfully delivery food (only count positive score)
-        reward = 3 * (gameState.getScore() - preGameState.getScore())
+        reward = 5 * (gameState.getScore() - preGameState.getScore())
         reward = reward if self.red else -reward
         if reward < 0:
             reward = 0
@@ -299,8 +299,6 @@ class OffensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        # self.file = os.path.join(os.path.dirname(__file__), "offensive.json")
-
         sys.path.append('teams/Pacman_Go/')
         self.file = "./offensive.json"
 
@@ -368,26 +366,28 @@ class DefensiveAQAgent(ApproximateQAgent):
 
         # feature 'num of Invaders'
         invaders = [successor.getAgentState(i).isPacman for i in self.getOpponents(successor)]
-        features['num of invaders'] = - len(invaders) / len(self.getOpponents(gameState))
+        features['num of invaders'] = - len(invaders) / len(self.getOpponents(successor))
 
         # feature 'mean dist to food'
-        allFood = self.getFoodYouAreDefending(gameState).asList()
+        allFood = self.getFoodYouAreDefending(successor).asList()
         distToFood = [self.getMazeDistance(myPos, food) for food in allFood]
         if len(distToFood) > 0:
             features['mean dist to food'] = - sum(distToFood) / len(distToFood) / self.mapArea
 
         # feature 'dist to food that closed to mid line'
         midLineToFood = []
-        for food in allFood:
+        allCapsules = self.getCapsulesYouAreDefending(successor)
+        defending = allFood+allCapsules
+        for food in defending:
             dist = [self.getMazeDistance(food, pos) for pos in self.enemyMidLine]
             if len(dist) > 0:
                 midLineToFood.append(min(dist))
             else:
                 midLineToFood.append(np.nan)
         if midLineToFood.count(np.nan) < len(midLineToFood):
-            foodIndex = np.nanargmin(midLineToFood)
+            index = np.nanargmin(midLineToFood)
             features['dist to food that closed to mid line'] \
-                = - self.getMazeDistance(myPos, allFood[foodIndex]) / self.mapArea
+                = - self.getMazeDistance(myPos, defending[index]) / self.mapArea
 
         # Normalize and return
         features.divideAll(len(self.weights))
@@ -395,8 +395,6 @@ class DefensiveAQAgent(ApproximateQAgent):
         return features
 
     def getWeights(self):
-
-        # self.file = os.path.join(os.path.dirname(__file__), "defensive.json")
 
         sys.path.append('teams/Pacman_Go/')
         self.file = "./defensive.json"
