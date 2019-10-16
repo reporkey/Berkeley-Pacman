@@ -35,7 +35,7 @@ class ValueIterationAgent(CaptureAgent):
 
         self.width, self.height = gameState.getWalls().width, gameState.getWalls().height
         self.discount = 0.9
-        self.timeLimit = 0.8
+        self.timeLimit = 0.7
         self.heuristic = self.getHeuristic()
 
         self.lastDefending = self.getFoodYouAreDefending(gameState).asList() + self.getCapsulesYouAreDefending(gameState)
@@ -57,7 +57,7 @@ class ValueIterationAgent(CaptureAgent):
 
         # value iteration
         self.buildVMap(gameState, self.getHeuristic())
-        self.iteration(self.timeLimit - 0.1)
+        self.iteration(self.timeLimit)
         self.buildPoliciesMap()
 
         (x, y) = gameState.getAgentPosition(self.index)
@@ -67,7 +67,6 @@ class ValueIterationAgent(CaptureAgent):
     def buildVMap(self, gameState, heuristic):
         walls = gameState.getWalls().asList()
         food = self.getFood(gameState).asList()
-        defendingFood = self.getFoodYouAreDefending(gameState).asList()
         capsules = self.getCapsules(gameState)
         numCarrying = gameState.getAgentState(self.index).numCarrying
         deliveryLine = [(self.width // 2 - 1 if self.red else self.width // 2, y) for y in range(1, self.height)]
@@ -86,23 +85,10 @@ class ValueIterationAgent(CaptureAgent):
             else:
                 self.rewards[x][y] += heuristic["food"]
 
-        # defending food
-        # for (x, y) in defendingFood:
-        #     if len(defendingFood) <= 8:
-        #         self.rewards[x][y] += heuristic["defendingFood"]
-        #     else:
-        #         self.rewards[x][y] = 0
-        #
-
         for (x, y) in capsules:
             self.rewards[x][y] += heuristic["capsule"]
 
         for (x, y) in deliveryLine:
-            # 18 foods is enough, so  get back asap
-            # if len(food) <= 2:
-            #     self.rewards[x][y] += 5000 + heuristic["delivery"] * numCarrying
-            # else:
-            #
             self.rewards[x][y] += heuristic["delivery"] * numCarrying
 
         # label visible enemies
@@ -126,18 +112,9 @@ class ValueIterationAgent(CaptureAgent):
                 # I'm pacman, enemy is ghost
                 elif gameState.getAgentState(self.index).isPacman and not enemyState.isPacman:
 
-                    # Enemy is scared
-                    # if enemyState.scaredTimer > 0:
-                    #     self.rewards[int(x)][int(y)] += heuristic["enemyPacman"]
-                    #
-
                     # Enemy is not scared
                     if enemyState.scaredTimer < 3:
                         self.rewards[int(x)][int(y)] += (heuristic["enemyGhost"] + heuristic["foodLostPenalty"] * numCarrying)
-
-                # I'm ghost, enemy is ghost
-                # else:
-                #     self.rewards[int(x)][int(y)] += heuristic["enemyPacman"]
 
         for (x, y) in walls:
             self.rewards[x][y] = None
@@ -148,7 +125,6 @@ class ValueIterationAgent(CaptureAgent):
 
         self.Vs = self.rewards.copy()
 
-        n = 0
         # update all V values [epoch] times
         while time.time() - self.start < timeLimit:
 
@@ -156,9 +132,6 @@ class ValueIterationAgent(CaptureAgent):
             for i, j in self.toUpdate:
                 self.Vs[i, j] = self.discount * max(self.getSuccessors(oldVs, i, j).values())
 
-            n += 1
-
-        print("iteration:", n)
 
     def buildPoliciesMap(self):
 
@@ -184,9 +157,10 @@ class ValueIterationAgent(CaptureAgent):
 
     def updateEnemiesPos(self, gameState):
 
+        myPos = gameState.getAgentPosition(self.index)
+
         # predict pos by last eaten food/capsule
-        dist = lambda pos: self.getMazeDistance(gameState.getAgentPosition(self.index), pos)
-        enemiesDists = [dist(self.enemiesPos[i])
+        enemiesDists = [self.getMazeDistance(self.enemiesPos[i], myPos)
                         if i in self.getOpponents(gameState)
                            and self.enemiesPos[i] is not None
                         else None
@@ -207,7 +181,6 @@ class ValueIterationAgent(CaptureAgent):
                 self.enemiesPos[i] = gameState.getAgentState(i).getPosition()
 
         # remove position of lost enemy when refreshing fog of war
-        myPos = gameState.getAgentPosition(self.index)
         visibleEnemiesPos = []
         for i in range(4):
             if i in self.getOpponents(gameState):
@@ -249,13 +222,12 @@ class OffensiveVIAgent(ValueIterationAgent):
 
     def getHeuristic(self):
         features = util.Counter()
-        features['food'] = 100
-        #features['defendingFood'] = 0
-        features['capsule'] = 200
-        features['delivery'] = 20
-        features['foodLostPenalty'] = -100
-        features['enemyGhost'] = -10000
-        features['enemyPacman'] = 50
+        features['food'] = 10
+        features['capsule'] = 20
+        features['delivery'] = 3
+        features['foodLostPenalty'] = -30
+        features['enemyGhost'] = -1000
+        features['enemyPacman'] = 10
         return features
 
 
@@ -263,11 +235,10 @@ class DefensiveVIAgent(ValueIterationAgent):
 
     def getHeuristic(self):
         features = util.Counter()
-        features['food'] = 100
-        #features['defendingFood'] = 20000
+        features['food'] = 10
         features['capsule'] = 0
-        features['delivery'] = 40
-        features['foodLostPenalty'] = -100
+        features['delivery'] = 3
+        features['foodLostPenalty'] = -30
         features['enemyGhost'] = -1000
-        features['enemyPacman'] = 100000
+        features['enemyPacman'] = 10000
         return features
