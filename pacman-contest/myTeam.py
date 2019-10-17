@@ -37,7 +37,7 @@ GAMMA = 1  # discounted rate
 C_P = 1.0  # UCT
 EPSILON = 0.1  # e-greedy
 TIME_LIMIT = 0.2
-
+sys.path.append('teams/Pacman_Go/')
 
 ##########
 # Agents #
@@ -89,8 +89,6 @@ class MonteCarloAgent(CaptureAgent):
 
         # MCT search for best estimate
         self.MCTSearch(gameState)
-        maxIndex = np.argmax([GAMMA * child.V for child in self.root.children])
-        decision = self.root.children[int(maxIndex)].action
 
         Qs = [child.V for child in self.root.children]
         Q = np.max(Qs)
@@ -119,27 +117,30 @@ class MonteCarloAgent(CaptureAgent):
             self.backprop(V, node)
             if time.time() - self.startTime > TIME_LIMIT:
                 break
-        maxIndex = np.argmax([GAMMA * child.V for child in self.root.children])
-        decision = self.root.children[int(maxIndex)].action
-        for child in self.root.children:
-            if child.action == Directions.NORTH:
-                print("NORTH:\t", child.N, "\t", child.V)
-            elif child.action == Directions.SOUTH:
-                print("SOUTH:\t", child.N, "\t", child.V)
-            elif child.action == Directions.WEST:
-                print("WEST:\t", child.N, "\t", child.V)
-            elif child.action == Directions.EAST:
-                print("EAST:\t", child.N, "\t", child.V)
-            elif child.action == Directions.STOP:
-                print("STOP:\t", child.N, "\t", child.V)
+        """ Debug session """
+        # maxIndex = np.argmax([GAMMA * child.V for child in self.root.children])
+        # decision = self.root.children[int(maxIndex)].action
+        # for child in self.root.children:
+        #     if child.action == Directions.NORTH:
+        #         print("NORTH:\t", child.N, "\t", child.V)
+        #     elif child.action == Directions.SOUTH:
+        #         print("SOUTH:\t", child.N, "\t", child.V)
+        #     elif child.action == Directions.WEST:
+        #         print("WEST:\t", child.N, "\t", child.V)
+        #     elif child.action == Directions.EAST:
+        #         print("EAST:\t", child.N, "\t", child.V)
+        #     elif child.action == Directions.STOP:
+        #         print("STOP:\t", child.N, "\t", child.V)
 
-        print("total: ", n, self.root.state.getAgentPosition(self.root.index), self.root.index, decision, "\n")
+        # print("total: ", n, self.root.state.getAgentPosition(self.root.index), self.root.index, decision, "\n")
 
     def selectNode(self):
         node = self.root
         action = None
         actions = node.state.getLegalActions(node.index)
 
+        """ UCB1 (UCT) """
+        """ Since the Q is not normalized between attacker and defender, UCT is not a good choice """
         # while (len(node.children) > 0 or len(actions) > 0) and not node.state.isOver():
         #
         #     # choose action
@@ -149,15 +150,12 @@ class MonteCarloAgent(CaptureAgent):
         #         action = np.random.choice(actions)
         #         break
 
-            # """ UCB1 (UCT) """
-            # """ Since the Q is not normalized between attacker and defender, UCT is not a good choice """
             # UCB1 = np.array([child.V + 2 * C_P * np.sqrt(2 * np.log(node.N) / child.N) for child in node.children])
             # node = node.children[np.random.choice(np.flatnonzero(UCB1 == UCB1.max()))]
             # actions = node.state.getLegalActions(node.index)
 
+        """ e-greedy """
         while action is None:
-            """ backup """
-            """ e-greedy """
             node = self.root
             actions = node.state.getLegalActions(node.index)
 
@@ -176,7 +174,6 @@ class MonteCarloAgent(CaptureAgent):
                     node = node.children[np.random.choice(np.flatnonzero(Qvalues == Qvalues.max()))]
                 actions = node.state.getLegalActions(node.index)
 
-        # print(node.state.getAgentPosition(node.index), node.index, actions, "=>", action)
         return node, action
 
     def expandNode(self, parent, action):
@@ -188,7 +185,6 @@ class MonteCarloAgent(CaptureAgent):
                          r=None,
                          parent=parent)
         parent.children.append(successor)
-        # print("expand Node from", parent.state.getAgentPosition(parent.index), action, "to ", successor.state.getAgentPosition(parent.index), "index: ", parent.index)
         return successor
 
     def simulate(self, node):
@@ -208,8 +204,6 @@ class MonteCarloAgent(CaptureAgent):
             node.N += 1
 
             node.V = np.sum([node.V] + [(GAMMA * child.V) * child.N for child in node.children]) / node.N
-
-            # bestChild = node.getBestChild()
 
             node = node.parent
 
@@ -337,7 +331,6 @@ class OffensiveReflexAgent(MonteCarloAgent):
     def getFeatures(self, gameState):
 
         features = util.Counter()
-        # gameState = getSuccessor(gameState, self.index, action)
         myPos = gameState.getAgentPosition(self.index)
         numCarryingFood = gameState.getAgentState(self.index).numCarrying
         foodList = self.getFood(gameState).asList()
@@ -384,13 +377,7 @@ class OffensiveReflexAgent(MonteCarloAgent):
 
     def getWeights(self):
 
-        """
-        Submission version
-        """
-        # sys.path.append('teams/Pacman_Go/')
-        # self.file = os.path.join("./offensive.json")
-
-        self.file = os.path.join(os.path.dirname(__file__), "offensive.json")
+        self.file = "./offensive.json"
 
         f = open(self.file, "r")
         data = f.read().splitlines()[-1]
@@ -443,7 +430,6 @@ class DefensiveReflexAgent(MonteCarloAgent):
     def getFeatures(self, gameState):
 
         features = util.Counter()
-        # gameState = getSuccessor(gameState, self.index, action)
         myState = gameState.getAgentState(self.index)
         myPos = myState.getPosition()
 
@@ -488,13 +474,7 @@ class DefensiveReflexAgent(MonteCarloAgent):
 
     def getWeights(self):
 
-        """
-        Submission version
-        """
-        # sys.path.append('teams/Pacman_Go/')
-        # self.file = os.path.join("./defensive.json")
-
-        self.file = os.path.join(os.path.dirname(__file__), "defensive.json")
+        self.file = "./defensive.json"
 
         f = open(self.file, "r")
         data = f.read().splitlines()[-1]
@@ -517,15 +497,6 @@ class Tree:
         self.r = r  # rewared
         self.N = 0  # visited times
 
-    # def getBestChild(self):
-    #     maxV = -np.inf
-    #     node = None
-    # if node.index in self.getTeam(node.state):
-    #     for child in self.children:
-    #         if child.V > maxV:
-    #             maxV = child.V
-    #             node = child
-    #     return node
 
 def getSuccessor(gameState, index, action):
     """
