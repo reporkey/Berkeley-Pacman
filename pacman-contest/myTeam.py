@@ -39,6 +39,8 @@ def createTeam(firstIndex, secondIndex, isRed,
 ALPHA = 0.01  # learning rate
 GAMMA = 0.8
 NSTEP = 4
+sys.path.append('teams/Pacman_Go/')
+
 
 class ApproximateQAgent(CaptureAgent):
 
@@ -72,17 +74,10 @@ class ApproximateQAgent(CaptureAgent):
         action = None
 
         if len(legalActions) > 0:
-            """
-            prob = util.flipCoin(self.epsilon)
-            if prob:
-              action = random.choice(legalActions)
-            else:
-            """
 
             # update enemy position info
             self.updateEnemiesPos(gameState)
 
-            start = time.time()
             action, Q = self.getMaxQ(gameState, step=NSTEP)
             feature = self.getFeatures(gameState, action)
 
@@ -124,14 +119,11 @@ class ApproximateQAgent(CaptureAgent):
             bestAction = actions[np.argmax(Qs)]
             bestQ = np.max(Qs)
         else:
-            print("No Features Found for All Actions.", "Index:", self.index, gameState.getAgentPosition(self.index), actions)
             return random.choice(actions), None
 
         return bestAction, bestQ
 
     def updateWeights(self, preGameState, gameState, Q):
-
-        # try:
 
         reward = self.getReward(gameState, preGameState)
         for feature in self.lastFeatures:
@@ -141,8 +133,6 @@ class ApproximateQAgent(CaptureAgent):
             if self.weights[feature] < 0:
                 self.weights[feature] = 0
 
-        # except:  # for the finish update, sometimes pre gs and gs are not consistent
-        #     pass
 
     def getSuccessor(self, gameState, action):
         """
@@ -299,7 +289,6 @@ class OffensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        sys.path.append('teams/Pacman_Go/')
         self.file = "./offensive.json"
 
         f = open(self.file, "r")
@@ -396,7 +385,6 @@ class DefensiveAQAgent(ApproximateQAgent):
 
     def getWeights(self):
 
-        sys.path.append('teams/Pacman_Go/')
         self.file = "./defensive.json"
 
         f = open(self.file, "r")
